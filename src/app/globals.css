@@ -1,0 +1,75 @@
+:root {
+  /* Identidade Arquiter */
+  --color-primary: #333333;
+  --color-secondary: #ead32d; /* dourado */
+  --color-tertiary: #dcdcdc;
+  --color-bg: #f6f6f4;
+  --color-surface: #ffffff;
+  --color-text: #1d1d1d;
+  --color-text-muted: #6b6b6b;
+  --color-border: #e4e4e0;
+  --color-positive: #2e7d4f;
+  --color-negative: #c0392b;
+
+  --radius: 14px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.06);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Be Vietnam Pro', system-ui, sans-serif;
+
+  --sidebar-w: 248px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'cv02', 'cv03', 'cv04';
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Força fundo branco em containers de texto (anti dark-mode iOS) */
+.surface {
+  background: #ffffff !important;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.scroll-x {
+  overflow-x: auto;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-tertiary);
+  border-radius: 8px;
+}
