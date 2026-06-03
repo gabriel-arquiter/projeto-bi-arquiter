@@ -37,16 +37,18 @@ export default function AiPage() {
   }
 
   return (
-    <div style={{ maxWidth: 760 }}>
-      <header style={{ marginBottom: 20 }}>
-        <h1
-          style={{ fontFamily: 'var(--font-display)', fontSize: 30, color: 'var(--color-primary)' }}
-        >
-          Agente de IA Preditiva
-        </h1>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 14, marginTop: 2 }}>
-          Pergunte em linguagem natural. Projeções baseadas nos dados reais dos últimos 30 dias.
-        </p>
+    <div style={{ maxWidth: 820 }}>
+      <header className="page-header">
+        <div>
+          <span className="eyebrow">Assistente</span>
+          <h1>Agente de IA Preditiva</h1>
+          <p className="subtitle">
+            Pergunte em linguagem natural. Projeções baseadas nos dados reais dos últimos 30 dias.
+          </p>
+        </div>
+        <span className="period-chip">
+          <span className="dot" /> Claude · server-side
+        </span>
       </header>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>

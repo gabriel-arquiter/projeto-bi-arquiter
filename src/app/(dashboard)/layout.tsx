@@ -7,16 +7,21 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const useMock = process.env.NEXT_PUBLIC_USE_MOCK === '1';
 
-  if (!user) redirect('/login');
+  let email = 'preview@arquiter.app';
+  if (!useMock) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) redirect('/login');
+    email = user.email ?? '';
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Nav userEmail={user.email ?? ''} />
+      <Nav userEmail={email} />
       <main
         style={{
           flex: 1,

@@ -1,24 +1,36 @@
 :root {
   /* Identidade Arquiter */
-  --color-primary: #333333;
+  --color-primary: #2a2a2a;
+  --color-primary-soft: #3b3b3b;
   --color-secondary: #ead32d; /* dourado */
+  --color-secondary-soft: #f4e472;
   --color-tertiary: #dcdcdc;
-  --color-bg: #f6f6f4;
-  --color-surface: #ffffff;
-  --color-text: #1d1d1d;
-  --color-text-muted: #6b6b6b;
-  --color-border: #e4e4e0;
-  --color-positive: #2e7d4f;
-  --color-negative: #c0392b;
 
-  --radius: 14px;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.06);
+  --color-bg: #f6f5f1;
+  --color-bg-soft: #ecebe5;
+  --color-surface: #ffffff;
+  --color-surface-2: #fafaf7;
+  --color-text: #1a1a1a;
+  --color-text-muted: #6e6e6a;
+  --color-text-subtle: #9c9c98;
+  --color-border: #e7e5dd;
+  --color-border-strong: #d6d3c9;
+  --color-positive: #2e7d4f;
+  --color-positive-soft: #e3f2e9;
+  --color-negative: #b8362a;
+  --color-negative-soft: #fbe6e3;
+
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 22px;
+  --shadow-sm: 0 1px 2px rgba(15, 15, 15, 0.04);
+  --shadow-md: 0 8px 28px rgba(15, 15, 15, 0.06);
+  --shadow-lg: 0 14px 44px rgba(15, 15, 15, 0.08);
 
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Be Vietnam Pro', system-ui, sans-serif;
 
-  --sidebar-w: 248px;
+  --sidebar-w: 256px;
 }
 
 * {
@@ -29,11 +41,16 @@
 
 html,
 body {
-  background: var(--color-bg);
+  background:
+    radial-gradient(ellipse 80% 60% at 100% 0%, rgba(234, 211, 45, 0.08), transparent 60%),
+    radial-gradient(ellipse 60% 60% at 0% 100%, rgba(42, 42, 42, 0.04), transparent 70%),
+    var(--color-bg);
+  background-attachment: fixed;
   color: var(--color-text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
-  font-feature-settings: 'cv02', 'cv03', 'cv04';
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+  letter-spacing: -0.005em;
 }
 
 a {
@@ -41,24 +58,265 @@ a {
   text-decoration: none;
 }
 
-/* Força fundo branco em containers de texto (anti dark-mode iOS) */
+/* Superfície base — usada em cartões */
 .surface {
-  background: #ffffff !important;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
+  transition: box-shadow 220ms ease, transform 220ms ease, border-color 220ms ease;
 }
 
+.surface-hover:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
+}
+
+.surface-elevated {
+  background: linear-gradient(180deg, #ffffff 0%, var(--color-surface-2) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+
+/* Header de página */
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 26px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.4vw, 36px);
+  font-weight: 600;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.page-header .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+.page-header .eyebrow::before {
+  content: '';
+  width: 22px;
+  height: 2px;
+  background: var(--color-secondary);
+  border-radius: 2px;
+}
+.page-header p.subtitle {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin-top: 6px;
+  max-width: 60ch;
+}
+
+/* Chip de período */
+.period-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+.period-chip .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  box-shadow: 0 0 0 4px rgba(234, 211, 45, 0.18);
+}
+
+/* Titulo de seção */
+.section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 28px 0 14px;
+}
+.section-title h2 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-primary);
+}
+.section-title .hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* Grid de KPIs */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}
 
-@media (max-width: 900px) {
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* KPI card — visual */
+.kpi {
+  position: relative;
+  padding: 20px 22px 18px;
+  overflow: hidden;
+}
+.kpi::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--kpi-accent, var(--color-secondary)) 0%, transparent 80%);
+  opacity: 0.85;
+}
+.kpi-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.kpi-value {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 2.8vw, 34px);
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 12px 0 6px;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.kpi-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.kpi-delta.up {
+  color: var(--color-positive);
+  background: var(--color-positive-soft);
+}
+.kpi-delta.down {
+  color: var(--color-negative);
+  background: var(--color-negative-soft);
+}
+.kpi-hint {
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--color-text-subtle);
+}
+.kpi-spark {
+  margin-top: 12px;
+  height: 38px;
+  width: 100%;
+}
+
+/* Chart container */
+.chart-card {
+  padding: 22px 22px 14px;
+}
+.chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.chart-head .legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.legend-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+.legend-pill .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* Tabelas polidas */
+.table-wrap {
+  padding: 0;
+  overflow: hidden;
+}
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.table-wrap thead tr {
+  background: var(--color-surface-2);
+}
+.table-wrap th {
+  text-align: left;
+  padding: 13px 18px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+.table-wrap td {
+  padding: 13px 18px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+.table-wrap tbody tr {
+  transition: background 160ms ease;
+}
+.table-wrap tbody tr:hover {
+  background: var(--color-surface-2);
+}
+.table-wrap td.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-bg-soft);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
 }
 
 .scroll-x {
@@ -72,4 +330,15 @@ a {
 ::-webkit-scrollbar-thumb {
   background: var(--color-tertiary);
   border-radius: 8px;
+}
+
+/* Empty state */
+.empty-state {
+  padding: 30px 22px;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  background: var(--color-surface-2);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius);
 }

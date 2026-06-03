@@ -18,55 +18,93 @@ export default async function SocialPage() {
   const lastIg = ig.at(-1);
   const lastPin = pin.at(-1);
 
+  const sparkFollowers = ig.slice(-14).map((d) => d.followers);
+  const sparkReach = ig.slice(-14).map((d) => d.reach);
+  const sparkPinImpr = pin.slice(-14).map((d) => d.impressions);
+  const sparkPinSaves = pin.slice(-14).map((d) => d.saves);
+
   return (
     <div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, color: 'var(--color-primary)', marginBottom: 20 }}>
-        Social
-      </h1>
+      <header className="page-header">
+        <div>
+          <span className="eyebrow">Redes sociais</span>
+          <h1>Social</h1>
+          <p className="subtitle">
+            Instagram e Pinterest — alcance, engajamento e melhores posts.
+          </p>
+        </div>
+        <span className="period-chip">
+          <span className="dot" /> Últimos 30 dias
+        </span>
+      </header>
 
-      <section className="kpi-grid" style={{ marginBottom: 22 }}>
-        <KpiCard label="Seguidores IG" value={fmt(lastIg?.followers ?? 0)} />
-        <KpiCard label="Alcance IG" value={fmt(lastIg?.reach ?? 0)} />
-        <KpiCard label="Impressões Pinterest" value={fmt(lastPin?.impressions ?? 0)} />
-        <KpiCard label="Saves Pinterest" value={fmt(lastPin?.saves ?? 0)} />
+      <section className="kpi-grid">
+        <KpiCard
+          label="Seguidores IG"
+          value={fmt(lastIg?.followers ?? 0)}
+          spark={sparkFollowers}
+          accent="#e1306c"
+        />
+        <KpiCard
+          label="Alcance IG"
+          value={fmt(lastIg?.reach ?? 0)}
+          spark={sparkReach}
+          accent="#e1306c"
+        />
+        <KpiCard
+          label="Impressões Pinterest"
+          value={fmt(lastPin?.impressions ?? 0)}
+          spark={sparkPinImpr}
+          accent="#e60023"
+        />
+        <KpiCard
+          label="Saves Pinterest"
+          value={fmt(lastPin?.saves ?? 0)}
+          spark={sparkPinSaves}
+          accent="#e60023"
+        />
       </section>
 
-      <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-primary)', margin: '6px 0 12px' }}>
-        Alcance Instagram (30 dias)
-      </h2>
+      <div className="section-title">
+        <h2>Alcance Instagram</h2>
+        <span className="hint">Últimos 30 dias</span>
+      </div>
       <TrendChart
         data={ig as unknown as Array<Record<string, string | number>>}
         xKey="date"
-        lines={[{ key: 'reach', label: 'Alcance' }]}
+        title="Alcance diário"
+        subtitle="Contas alcançadas no Instagram"
+        lines={[{ key: 'reach', label: 'Alcance', color: '#e1306c' }]}
       />
 
-      <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-primary)', margin: '24px 0 12px' }}>
-        Top posts
-      </h2>
-      <div className="surface scroll-x" style={{ padding: 0 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+      <div className="section-title">
+        <h2>Top posts</h2>
+        <span className="hint">Maior taxa de engajamento</span>
+      </div>
+      <div className="surface table-wrap scroll-x">
+        <table>
           <thead>
-            <tr style={{ textAlign: 'left', color: 'var(--color-text-muted)' }}>
-              <th style={th}>Tipo</th>
-              <th style={th}>Alcance</th>
-              <th style={th}>Likes</th>
-              <th style={th}>Saves</th>
-              <th style={th}>Engaj.</th>
+            <tr>
+              <th>Tipo</th>
+              <th>Alcance</th>
+              <th>Likes</th>
+              <th>Saves</th>
+              <th>Engaj.</th>
             </tr>
           </thead>
           <tbody>
             {posts.map((p) => (
-              <tr key={p.id} style={{ borderTop: '1px solid var(--color-border)' }}>
-                <td style={td}>{p.media_type}</td>
-                <td style={td}>{fmt(p.reach)}</td>
-                <td style={td}>{fmt(p.likes)}</td>
-                <td style={td}>{fmt(p.saves)}</td>
-                <td style={td}>{(p.engagement_rate * 100).toFixed(1)}%</td>
+              <tr key={p.id}>
+                <td><span className="badge">{p.media_type}</span></td>
+                <td className="num">{fmt(p.reach)}</td>
+                <td className="num">{fmt(p.likes)}</td>
+                <td className="num">{fmt(p.saves)}</td>
+                <td className="num">{(p.engagement_rate * 100).toFixed(1)}%</td>
               </tr>
             ))}
             {posts.length === 0 && (
               <tr>
-                <td style={td} colSpan={5}>
+                <td colSpan={5} style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
                   Sem posts ainda.
                 </td>
               </tr>
@@ -77,6 +115,3 @@ export default async function SocialPage() {
     </div>
   );
 }
-
-const th: React.CSSProperties = { padding: '12px 16px', fontWeight: 600, fontSize: 12 };
-const td: React.CSSProperties = { padding: '12px 16px' };

@@ -5,7 +5,7 @@ import type { AdsMetric } from '@/types/database';
 
 export const dynamic = 'force-dynamic';
 const brl = (n: number) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 const fmt = (n: number) => new Intl.NumberFormat('pt-BR').format(Math.round(n));
 
 function agg(rows: AdsMetric[]) {
@@ -32,6 +32,12 @@ function byDay(meta: AdsMetric[], google: AdsMetric[]) {
   return [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 
+function sparkBy(rows: AdsMetric[], key: 'leads' | 'spend', days = 14) {
+  const map = new Map<string, number>();
+  for (const r of rows) map.set(r.date, (map.get(r.date) ?? 0) + (r[key] ?? 0));
+  return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0])).slice(-days).map(([, v]) => v);
+}
+
 export default async function AdsPage() {
   const [meta, google] = await Promise.all([
     getMetaAds(30).catch(() => []),
@@ -41,44 +47,62 @@ export default async function AdsPage() {
   const g = agg(google);
   const series = byDay(meta, google);
 
+  const metaLeadsSpark = sparkBy(meta, 'leads');
+  const metaSpendSpark = sparkBy(meta, 'spend');
+  const gLeadsSpark = sparkBy(google, 'leads');
+  const gSpendSpark = sparkBy(google, 'spend');
+
   return (
     <div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, color: 'var(--color-primary)', marginBottom: 20 }}>
-        Mídia Paga
-      </h1>
+      <header className="page-header">
+        <div>
+          <span className="eyebrow">Mídia</span>
+          <h1>Mídia Paga</h1>
+          <p className="subtitle">
+            Meta Ads e Google Ads — investimento, leads e retorno consolidados.
+          </p>
+        </div>
+        <span className="period-chip">
+          <span className="dot" /> Últimos 30 dias
+        </span>
+      </header>
 
-      <h2 style={st}>Meta Ads</h2>
-      <section className="kpi-grid" style={{ marginBottom: 20 }}>
-        <KpiCard label="Investimento" value={brl(m.spend)} />
-        <KpiCard label="Leads" value={fmt(m.leads)} />
-        <KpiCard label="CPL" value={brl(m.cpl)} />
-        <KpiCard label="ROAS médio" value={`${m.roas.toFixed(2)}x`} />
+      <div className="section-title">
+        <h2>Meta Ads</h2>
+        <span className="hint">Facebook & Instagram</span>
+      </div>
+      <section className="kpi-grid" style={{ marginBottom: 8 }}>
+        <KpiCard label="Investimento" value={brl(m.spend)} spark={metaSpendSpark} accent="#1877f2" />
+        <KpiCard label="Leads" value={fmt(m.leads)} spark={metaLeadsSpark} accent="#1877f2" />
+        <KpiCard label="CPL" value={brl(m.cpl)} accent="#1877f2" />
+        <KpiCard label="ROAS médio" value={`${m.roas.toFixed(2)}x`} accent="#1877f2" />
       </section>
 
-      <h2 style={st}>Google Ads</h2>
-      <section className="kpi-grid" style={{ marginBottom: 24 }}>
-        <KpiCard label="Investimento" value={brl(g.spend)} />
-        <KpiCard label="Leads" value={fmt(g.leads)} />
-        <KpiCard label="CPL" value={brl(g.cpl)} />
-        <KpiCard label="ROAS médio" value={`${g.roas.toFixed(2)}x`} />
+      <div className="section-title">
+        <h2>Google Ads</h2>
+        <span className="hint">Search + Performance Max</span>
+      </div>
+      <section className="kpi-grid" style={{ marginBottom: 8 }}>
+        <KpiCard label="Investimento" value={brl(g.spend)} spark={gSpendSpark} accent="#ea4335" />
+        <KpiCard label="Leads" value={fmt(g.leads)} spark={gLeadsSpark} accent="#ea4335" />
+        <KpiCard label="CPL" value={brl(g.cpl)} accent="#ea4335" />
+        <KpiCard label="ROAS médio" value={`${g.roas.toFixed(2)}x`} accent="#ea4335" />
       </section>
 
-      <h2 style={st}>Leads por dia — Meta vs Google</h2>
+      <div className="section-title">
+        <h2>Leads por dia</h2>
+        <span className="hint">Meta vs Google</span>
+      </div>
       <TrendChart
         data={series as unknown as Array<Record<string, string | number>>}
         xKey="date"
+        title="Volume de leads"
+        subtitle="Comparação direta entre canais pagos"
         lines={[
-          { key: 'meta', label: 'Meta' },
-          { key: 'google', label: 'Google' },
+          { key: 'meta', label: 'Meta', color: '#1877f2' },
+          { key: 'google', label: 'Google', color: '#ea4335' },
         ]}
       />
     </div>
   );
 }
-
-const st: React.CSSProperties = {
-  fontSize: 15,
-  fontWeight: 600,
-  color: 'var(--color-primary)',
-  margin: '6px 0 12px',
-};

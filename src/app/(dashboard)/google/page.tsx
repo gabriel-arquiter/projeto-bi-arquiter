@@ -17,58 +17,78 @@ export default async function GooglePage() {
   const avgPos = sc.length ? sc.reduce((s, d) => s + (d.avg_position ?? 0), 0) / sc.length : 0;
   const lastGa4 = ga4.at(-1);
 
+  const sparkClicks = sc.slice(-14).map((d) => d.clicks);
+  const sparkImpr = sc.slice(-14).map((d) => d.impressions);
+
   return (
     <div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 30, color: 'var(--color-primary)', marginBottom: 20 }}>
-        Google
-      </h1>
+      <header className="page-header">
+        <div>
+          <span className="eyebrow">SEO & orgânico</span>
+          <h1>Google</h1>
+          <p className="subtitle">
+            Performance no Search Console e comportamento dos visitantes orgânicos.
+          </p>
+        </div>
+        <span className="period-chip">
+          <span className="dot" /> Últimos 30 dias
+        </span>
+      </header>
 
-      <section className="kpi-grid" style={{ marginBottom: 22 }}>
-        <KpiCard label="Cliques orgânicos" value={fmt(totalClicks)} />
-        <KpiCard label="Impressões" value={fmt(totalImpr)} />
-        <KpiCard label="Posição média" value={avgPos.toFixed(1)} />
-        <KpiCard label="Bounce rate" value={`${((lastGa4?.bounce_rate ?? 0) * 100).toFixed(0)}%`} />
+      <section className="kpi-grid">
+        <KpiCard label="Cliques orgânicos" value={fmt(totalClicks)} spark={sparkClicks} />
+        <KpiCard label="Impressões" value={fmt(totalImpr)} spark={sparkImpr} accent="#3b3b3b" />
+        <KpiCard label="Posição média" value={avgPos.toFixed(1)} hint="quanto menor, melhor" accent="#2e7d4f" />
+        <KpiCard
+          label="Bounce rate"
+          value={`${((lastGa4?.bounce_rate ?? 0) * 100).toFixed(0)}%`}
+          accent="#b87f00"
+        />
       </section>
 
-      <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-primary)', margin: '6px 0 12px' }}>
-        Search Console (30 dias)
-      </h2>
+      <div className="section-title">
+        <h2>Search Console</h2>
+        <span className="hint">Últimos 30 dias</span>
+      </div>
       <TrendChart
         data={sc as unknown as Array<Record<string, string | number>>}
         xKey="date"
+        title="Cliques × impressões"
+        subtitle="Volume diário do Search Console"
         lines={[
           { key: 'clicks', label: 'Cliques' },
-          { key: 'impressions', label: 'Impressões' },
+          { key: 'impressions', label: 'Impressões', color: '#ead32d' },
         ]}
       />
 
-      <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-primary)', margin: '24px 0 12px' }}>
-        Top keywords
-      </h2>
-      <div className="surface scroll-x" style={{ padding: 0 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+      <div className="section-title">
+        <h2>Top keywords</h2>
+        <span className="hint">Maiores volumes de clique</span>
+      </div>
+      <div className="surface table-wrap scroll-x">
+        <table>
           <thead>
-            <tr style={{ textAlign: 'left', color: 'var(--color-text-muted)' }}>
-              <th style={th}>Keyword</th>
-              <th style={th}>Cliques</th>
-              <th style={th}>Impr.</th>
-              <th style={th}>CTR</th>
-              <th style={th}>Pos.</th>
+            <tr>
+              <th>Keyword</th>
+              <th>Cliques</th>
+              <th>Impr.</th>
+              <th>CTR</th>
+              <th>Pos.</th>
             </tr>
           </thead>
           <tbody>
             {kw.map((k, i) => (
-              <tr key={i} style={{ borderTop: '1px solid var(--color-border)' }}>
-                <td style={td}>{k.keyword}</td>
-                <td style={td}>{fmt(k.clicks)}</td>
-                <td style={td}>{fmt(k.impressions)}</td>
-                <td style={td}>{(k.ctr * 100).toFixed(1)}%</td>
-                <td style={td}>{k.avg_position.toFixed(1)}</td>
+              <tr key={i}>
+                <td>{k.keyword}</td>
+                <td className="num">{fmt(k.clicks)}</td>
+                <td className="num">{fmt(k.impressions)}</td>
+                <td className="num">{(k.ctr * 100).toFixed(1)}%</td>
+                <td className="num">{k.avg_position.toFixed(1)}</td>
               </tr>
             ))}
             {kw.length === 0 && (
               <tr>
-                <td style={td} colSpan={5}>
+                <td colSpan={5} style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
                   Sem keywords ainda.
                 </td>
               </tr>
@@ -79,6 +99,3 @@ export default async function GooglePage() {
     </div>
   );
 }
-
-const th: React.CSSProperties = { padding: '12px 16px', fontWeight: 600, fontSize: 12 };
-const td: React.CSSProperties = { padding: '12px 16px' };

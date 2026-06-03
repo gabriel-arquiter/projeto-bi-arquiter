@@ -8,7 +8,7 @@ function fmt(n: number) {
   return new Intl.NumberFormat('pt-BR').format(Math.round(n));
 }
 function brl(n: number) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 }
 
 export default async function OverviewPage() {
@@ -24,53 +24,79 @@ export default async function OverviewPage() {
     a && b ? ((a - b) / b) * 100 : undefined;
 
   const totalLeads = (last?.meta_leads ?? 0) + (last?.google_leads ?? 0);
+  const prevLeads = (prev?.meta_leads ?? 0) + (prev?.google_leads ?? 0);
   const totalSpend = (last?.meta_spend ?? 0) + (last?.google_spend ?? 0);
+  const prevSpend = (prev?.meta_spend ?? 0) + (prev?.google_spend ?? 0);
+
+  // Sparklines: derivados de GA4 (últimos 14d) pra dar contexto nos KPIs
+  const lastDays = ga4.slice(-14);
+  const sparkSessions = lastDays.map((d) => d.sessions);
+  const sparkUsers = lastDays.map((d) => d.users);
+  const sparkPaid = lastDays.map((d) => d.paid_sessions);
 
   return (
     <div>
-      <header style={{ marginBottom: 22 }}>
-        <h1
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 30,
-            color: 'var(--color-primary)',
-          }}
-        >
-          Resumo do Mês
-        </h1>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: 14, marginTop: 2 }}>
-          Visão consolidada de tráfego, mídia e conversão.
-        </p>
+      <header className="page-header">
+        <div>
+          <span className="eyebrow">Visão geral</span>
+          <h1>Resumo do Mês</h1>
+          <p className="subtitle">
+            Tráfego, mídia paga e conversão consolidados — comparação com o mês anterior.
+          </p>
+        </div>
+        <span className="period-chip">
+          <span className="dot" /> Últimos 30 dias
+        </span>
       </header>
 
-      <section className="kpi-grid" style={{ marginBottom: 22 }}>
+      <section className="kpi-grid">
         <KpiCard
           label="Sessões"
           value={fmt(last?.sessions ?? 0)}
           delta={delta(last?.sessions, prev?.sessions)}
+          spark={sparkSessions}
         />
         <KpiCard
           label="Usuários"
           value={fmt(last?.users ?? 0)}
           delta={delta(last?.users, prev?.users)}
+          spark={sparkUsers}
+          accent="#2e7d4f"
         />
-        <KpiCard label="Leads (mídia)" value={fmt(totalLeads)} />
-        <KpiCard label="Investimento" value={brl(totalSpend)} />
+        <KpiCard
+          label="Leads (mídia)"
+          value={fmt(totalLeads)}
+          delta={delta(totalLeads, prevLeads)}
+          spark={sparkPaid}
+          accent="#3b3b3b"
+        />
+        <KpiCard
+          label="Investimento"
+          value={brl(totalSpend)}
+          delta={delta(totalSpend, prevSpend)}
+          hint="Meta + Google"
+          accent="#b87f00"
+        />
       </section>
 
-      <h2 style={sectionTitle}>Tráfego diário (30 dias)</h2>
+      <div className="section-title">
+        <h2>Tráfego diário</h2>
+        <span className="hint">GA4 · últimos 30 dias</span>
+      </div>
       <TrendChart
         data={ga4 as unknown as Array<Record<string, string | number>>}
         xKey="date"
+        title="Sessões por canal"
+        subtitle="Orgânico vs pago vs social"
         lines={[
-          { key: 'sessions', label: 'Sessões' },
-          { key: 'organic_sessions', label: 'Orgânico' },
-          { key: 'paid_sessions', label: 'Pago' },
+          { key: 'sessions', label: 'Total' },
+          { key: 'organic_sessions', label: 'Orgânico', color: '#2e7d4f' },
+          { key: 'paid_sessions', label: 'Pago', color: '#ead32d' },
         ]}
       />
 
       {overview.length === 0 && (
-        <p style={{ marginTop: 18, fontSize: 13, color: 'var(--color-text-muted)' }}>
+        <p className="empty-state" style={{ marginTop: 18 }}>
           Nenhum dado ainda. Assim que o n8n popular as tabelas, os números aparecem
           automaticamente.
         </p>
@@ -78,10 +104,3 @@ export default async function OverviewPage() {
     </div>
   );
 }
-
-const sectionTitle: React.CSSProperties = {
-  fontSize: 15,
-  fontWeight: 600,
-  color: 'var(--color-primary)',
-  margin: '6px 0 12px',
-};

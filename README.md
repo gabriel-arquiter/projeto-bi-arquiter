@@ -21,6 +21,20 @@ cp .env.example .env.local   # preencha as chaves
 npm run dev                  # http://localhost:3000
 ```
 
+### Preview com mock data (sem Supabase, sem login)
+
+Para visualizar o dashboard usando dados sintéticos — útil pra design review,
+apresentação ao cliente ou desenvolvimento sem rodar o Supabase:
+
+```bash
+# .env.local
+NEXT_PUBLIC_USE_MOCK=1
+```
+
+Com a flag ligada, todas as queries retornam mock data determinístico
+(`src/lib/mock-data.ts`) e o gate de autenticação é dispensado.
+Para voltar ao comportamento real, basta apagar a linha ou setar `=0`.
+
 ## Configurar o Supabase Auth
 
 1. No painel Supabase → Authentication → Providers → habilite **Email**.

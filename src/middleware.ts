@@ -12,6 +12,16 @@ type CookieToSet = { name: string; value: string; options?: CookieOptions };
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // Modo preview com mock data: dispensa autenticação para demo visual.
+  if (process.env.NEXT_PUBLIC_USE_MOCK === '1') {
+    if (request.nextUrl.pathname.startsWith('/login')) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
+    return response;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
