@@ -4,13 +4,74 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
-const items = [
+type Item = {
+  href: string;
+  label: string;
+  icon: string;
+  badge?: { text: string; tone: 'gold' };
+};
+
+type Group = {
+  title: string;
+  items: Item[];
+};
+
+const groups: Group[] = [
+  {
+    title: 'Visão geral',
+    items: [
+      { href: '/', label: 'Dashboard', icon: '◳' },
+      {
+        href: '/investor',
+        label: 'Investor View',
+        icon: '◆',
+        badge: { text: 'LIVE', tone: 'gold' },
+      },
+    ],
+  },
+  {
+    title: 'Social analytics',
+    items: [
+      { href: '/instagram', label: 'Instagram', icon: '◎' },
+      { href: '/pinterest', label: 'Pinterest', icon: '◉' },
+    ],
+  },
+  {
+    title: 'Web analytics',
+    items: [
+      { href: '/ga', label: 'Google Analytics', icon: '◍' },
+      { href: '/gsc', label: 'Google Search Console', icon: '◌' },
+    ],
+  },
+  {
+    title: 'Mídia paga',
+    items: [
+      { href: '/meta-ads', label: 'Meta Ads', icon: '◈' },
+      { href: '/google-ads', label: 'Google Ads', icon: '◇' },
+      { href: '/pinterest-ads', label: 'Pinterest Ads', icon: '◊' },
+    ],
+  },
+  {
+    title: 'Inteligência',
+    items: [
+      { href: '/ai', label: 'Agente IA', icon: '✦' },
+      { href: '/projecoes', label: 'Projeções', icon: '✧' },
+    ],
+  },
+];
+
+const mobileGroups = [
   { href: '/', label: 'Overview', icon: '◳' },
-  { href: '/social', label: 'Social', icon: '◎' },
-  { href: '/google', label: 'Google', icon: '◍' },
-  { href: '/ads', label: 'Ads', icon: '◈' },
+  { href: '/instagram', label: 'Social', icon: '◎' },
+  { href: '/ga', label: 'Web', icon: '◍' },
+  { href: '/meta-ads', label: 'Ads', icon: '◈' },
   { href: '/ai', label: 'IA', icon: '✦' },
 ];
+
+function isActive(pathname: string, href: string): boolean {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function Nav({ userEmail }: { userEmail: string }) {
   const pathname = usePathname();
@@ -29,18 +90,17 @@ export function Nav({ userEmail }: { userEmail: string }) {
       <aside
         style={{
           width: 'var(--sidebar-w)',
-          background:
-            'linear-gradient(180deg, #2a2a2a 0%, #1f1f1f 100%)',
-          color: '#fff',
-          padding: '26px 18px 22px',
+          background: 'var(--sidebar)',
+          color: 'var(--text)',
+          padding: '22px 14px 18px',
           display: 'flex',
           flexDirection: 'column',
           gap: 4,
           position: 'sticky',
           top: 0,
           height: '100vh',
-          borderRight: '1px solid rgba(255,255,255,0.04)',
-          boxShadow: 'inset -1px 0 0 rgba(255,255,255,0.03)',
+          borderRight: '1px solid var(--line)',
+          overflowY: 'auto',
         }}
         className="sidebar-desktop"
       >
@@ -50,103 +110,133 @@ export function Nav({ userEmail }: { userEmail: string }) {
             display: 'flex',
             alignItems: 'center',
             gap: 10,
-            padding: '4px 10px 24px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            padding: '4px 10px 22px',
+            borderBottom: '1px solid var(--line)',
             marginBottom: 18,
           }}
         >
           <span
             style={{
-              width: 22,
-              height: 22,
+              width: 24,
+              height: 24,
               background: 'var(--color-secondary)',
-              borderRadius: 6,
+              borderRadius: 5,
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 800,
-              color: '#1a1a1a',
+              color: '#0f0f0f',
               fontSize: 12,
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '-0.02em',
             }}
           >
             A
           </span>
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-            <span style={{ fontWeight: 700, letterSpacing: 2, fontSize: 13 }}>ARQUITER</span>
-            <span style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.45)', marginTop: 3, letterSpacing: 0.4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+            <span style={{ fontWeight: 700, letterSpacing: 2, fontSize: 12 }}>ARQUITER</span>
+            <span
+              style={{
+                fontSize: 9.5,
+                color: 'var(--text-subtle)',
+                marginTop: 3,
+                letterSpacing: 0.16,
+                fontFamily: 'var(--font-mono)',
+                textTransform: 'uppercase',
+              }}
+            >
               Web analytics
             </span>
           </div>
         </div>
 
-        <span
-          style={{
-            fontSize: 10,
-            letterSpacing: 0.2,
-            color: 'rgba(255,255,255,0.4)',
-            padding: '0 12px 8px',
-            textTransform: 'uppercase',
-            fontWeight: 600,
-          }}
-        >
-          Painéis
-        </span>
-
-        {items.map((it) => {
-          const active = pathname === it.href;
-          return (
-            <Link
-              key={it.href}
-              href={it.href}
+        {groups.map((group) => (
+          <div key={group.title} style={{ marginBottom: 6 }}>
+            <span
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '10px 12px',
-                borderRadius: 10,
-                fontSize: 14,
-                fontWeight: active ? 600 : 500,
-                background: active ? 'rgba(234,211,45,0.12)' : 'transparent',
-                color: active ? 'var(--color-secondary)' : 'rgba(255,255,255,0.78)',
-                position: 'relative',
-                transition: 'background 160ms ease, color 160ms ease',
+                display: 'block',
+                fontSize: 9.5,
+                letterSpacing: 0.18,
+                color: 'var(--text-subtle)',
+                padding: '12px 12px 6px',
+                textTransform: 'uppercase',
+                fontWeight: 600,
+                fontFamily: 'var(--font-mono)',
+                pointerEvents: 'none',
               }}
             >
-              {active && (
-                <span
-                  aria-hidden
+              {group.title}
+            </span>
+            {group.items.map((it) => {
+              const active = isActive(pathname, it.href);
+              return (
+                <Link
+                  key={it.href}
+                  href={it.href}
                   style={{
-                    position: 'absolute',
-                    left: -18,
-                    top: 8,
-                    bottom: 8,
-                    width: 3,
-                    background: 'var(--color-secondary)',
-                    borderRadius: '0 3px 3px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 11,
+                    padding: '9px 12px',
+                    borderRadius: 6,
+                    fontSize: 13,
+                    fontWeight: active ? 600 : 500,
+                    background: active ? 'var(--gold-bg)' : 'transparent',
+                    color: active ? 'var(--color-secondary)' : 'rgba(255,255,255,0.78)',
+                    position: 'relative',
+                    transition: 'background 160ms ease, color 160ms ease',
+                    borderLeft: active
+                      ? '2px solid var(--color-secondary)'
+                      : '2px solid transparent',
+                    paddingLeft: active ? 10 : 12,
                   }}
-                />
-              )}
-              <span style={{ width: 18, textAlign: 'center', fontSize: 14 }}>{it.icon}</span>
-              {it.label}
-            </Link>
-          );
-        })}
+                >
+                  <span
+                    style={{
+                      width: 16,
+                      textAlign: 'center',
+                      fontSize: 13,
+                      opacity: active ? 1 : 0.7,
+                    }}
+                  >
+                    {it.icon}
+                  </span>
+                  <span style={{ flex: 1 }}>{it.label}</span>
+                  {it.badge && (
+                    <span className={`badge ${it.badge.tone}`} style={{ fontSize: 9 }}>
+                      {it.badge.text}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
 
-        <div style={{ marginTop: 'auto', fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
+        <div style={{ marginTop: 'auto', fontSize: 12, color: 'var(--text-muted)' }}>
           <div
             style={{
-              padding: '12px 12px',
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.04)',
+              padding: '10px 12px',
+              borderRadius: 6,
+              background: 'var(--surface-2)',
               marginBottom: 8,
-              border: '1px solid rgba(255,255,255,0.05)',
+              border: '1px solid var(--line)',
             }}
           >
-            <p style={{ fontSize: 10.5, letterSpacing: 0.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
+            <p
+              style={{
+                fontSize: 9,
+                letterSpacing: 0.16,
+                textTransform: 'uppercase',
+                color: 'var(--text-subtle)',
+                marginBottom: 4,
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 600,
+              }}
+            >
               Logado como
             </p>
-            <p style={{ wordBreak: 'break-all', fontSize: 12.5, color: 'rgba(255,255,255,0.85)' }}>
+            <p style={{ wordBreak: 'break-all', fontSize: 11.5, color: 'var(--text)' }}>
               {userEmail}
             </p>
           </div>
@@ -154,28 +244,36 @@ export function Nav({ userEmail }: { userEmail: string }) {
             onClick={logout}
             style={{
               width: '100%',
-              padding: '10px',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.05)',
-              borderRadius: 10,
-              color: '#fff',
+              padding: '9px',
+              background: 'transparent',
+              border: '1px solid var(--line-strong)',
+              borderRadius: 6,
+              color: 'var(--text)',
               cursor: 'pointer',
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: 500,
-              transition: 'background 160ms ease',
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              transition: 'background 160ms ease, border-color 160ms ease',
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--surface-2)';
+              e.currentTarget.style.borderColor = 'var(--gold-line)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.borderColor = 'var(--line-strong)';
+            }}
           >
             Sair
           </button>
         </div>
       </aside>
 
-      {/* Bottom nav mobile */}
+      {/* Bottom nav mobile — 5 grupos */}
       <nav className="bottom-nav">
-        {items.map((it) => {
-          const active = pathname === it.href;
+        {mobileGroups.map((it) => {
+          const active = isActive(pathname, it.href);
           return (
             <Link
               key={it.href}
@@ -184,10 +282,12 @@ export function Nav({ userEmail }: { userEmail: string }) {
                 flex: 1,
                 textAlign: 'center',
                 padding: '8px 0 10px',
-                fontSize: 11,
-                color: active ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                fontWeight: active ? 700 : 500,
+                fontSize: 10,
+                color: active ? 'var(--color-secondary)' : 'var(--text-muted)',
+                fontWeight: active ? 600 : 500,
                 position: 'relative',
+                textTransform: 'uppercase',
+                letterSpacing: 0.06,
               }}
             >
               {active && (
@@ -204,7 +304,7 @@ export function Nav({ userEmail }: { userEmail: string }) {
                   }}
                 />
               )}
-              <div style={{ fontSize: 18 }}>{it.icon}</div>
+              <div style={{ fontSize: 16, marginBottom: 2 }}>{it.icon}</div>
               {it.label}
             </Link>
           );
@@ -219,11 +319,10 @@ export function Nav({ userEmail }: { userEmail: string }) {
             display: flex;
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            background: #fff !important;
-            border-top: 1px solid var(--color-border);
+            background: var(--sidebar) !important;
+            border-top: 1px solid var(--line);
             z-index: 50;
             padding-bottom: env(safe-area-inset-bottom);
-            box-shadow: 0 -6px 18px rgba(0,0,0,0.04);
           }
         }
       `}</style>

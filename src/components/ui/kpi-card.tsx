@@ -5,27 +5,26 @@ import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 interface KpiCardProps {
   label: string;
   value: string;
-  delta?: number; // variação % vs período anterior
+  delta?: number;
   hint?: string;
-  accent?: string; // cor do filete superior (default: amarelo Arquiter)
-  spark?: number[]; // série pra sparkline opcional
+  spark?: number[];
   icon?: React.ReactNode;
+  accent?: string;
 }
 
-export function KpiCard({ label, value, delta, hint, accent, spark, icon }: KpiCardProps) {
+export function KpiCard({ label, value, delta, hint, spark, icon, accent }: KpiCardProps) {
   const positive = (delta ?? 0) >= 0;
   const sparkData = spark?.map((v, i) => ({ i, v })) ?? null;
-  const accentColor = accent ?? 'var(--color-secondary)';
+  const stroke = accent ?? 'var(--color-secondary)';
+  const sparkId = `spark-${label.replace(/\s+/g, '').replace(/[^a-zA-Z0-9-]/g, '')}`;
 
   return (
-    <div
-      className="surface surface-hover kpi"
-      style={{ ['--kpi-accent' as never]: accentColor }}
-    >
-      <p className="kpi-label">
-        {icon && <span aria-hidden style={{ opacity: 0.7 }}>{icon}</span>}
-        {label}
-      </p>
+    <div className="surface surface-hover kpi">
+      <div className="kpi-head">
+        <p className="kpi-label">{label}</p>
+        {icon && <span className="kpi-icon" aria-hidden>{icon}</span>}
+      </div>
+
       <p className="kpi-value">{value}</p>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -42,17 +41,17 @@ export function KpiCard({ label, value, delta, hint, accent, spark, icon }: KpiC
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={sparkData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id={`spark-${label.replace(/\s+/g, '')}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={accentColor} stopOpacity={0.5} />
-                  <stop offset="100%" stopColor={accentColor} stopOpacity={0} />
+                <linearGradient id={sparkId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={stroke} stopOpacity={0.35} />
+                  <stop offset="100%" stopColor={stroke} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <Area
                 type="monotone"
                 dataKey="v"
-                stroke={accentColor}
-                strokeWidth={1.6}
-                fill={`url(#spark-${label.replace(/\s+/g, '')})`}
+                stroke={stroke}
+                strokeWidth={1.5}
+                fill={`url(#${sparkId})`}
                 isAnimationActive={false}
               />
             </AreaChart>
@@ -62,3 +61,4 @@ export function KpiCard({ label, value, delta, hint, accent, spark, icon }: KpiC
     </div>
   );
 }
+

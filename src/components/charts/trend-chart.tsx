@@ -8,7 +8,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts';
 
 interface TrendChartProps {
@@ -21,7 +20,7 @@ interface TrendChartProps {
   yFormatter?: (v: number) => string;
 }
 
-const palette = ['#2a2a2a', '#ead32d', '#7b8a93', '#2e7d4f'];
+const palette = ['#ead32d', '#4a90d9', 'rgba(255,255,255,0.25)', '#00d97e'];
 
 function shortDate(v: string | number) {
   const s = String(v);
@@ -49,16 +48,8 @@ export function TrendChart({
       {(title || subtitle) && (
         <div className="chart-head">
           <div>
-            {title && (
-              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-primary)' }}>
-                {title}
-              </p>
-            )}
-            {subtitle && (
-              <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
-                {subtitle}
-              </p>
-            )}
+            {title && <p className="title">{title}</p>}
+            {subtitle && <p className="subtitle">{subtitle}</p>}
           </div>
           <div className="legend">
             {lines.map((l, i) => (
@@ -88,49 +79,54 @@ export function TrendChart({
                   x2="0"
                   y2="1"
                 >
-                  <stop offset="0%" stopColor={c} stopOpacity={i === 0 ? 0.28 : 0.18} />
+                  <stop offset="0%" stopColor={c} stopOpacity={0.22} />
                   <stop offset="100%" stopColor={c} stopOpacity={0} />
                 </linearGradient>
               );
             })}
           </defs>
 
-          <CartesianGrid stroke="var(--color-border)" vertical={false} strokeDasharray="2 4" />
+          <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
 
           <XAxis
             dataKey={xKey}
             tickFormatter={shortDate}
-            tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }}
+            tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-mono)' }}
             tickLine={false}
-            axisLine={{ stroke: 'var(--color-border)' }}
+            axisLine={{ stroke: 'rgba(255,255,255,0.08)' }}
             interval="preserveStartEnd"
             minTickGap={28}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: 'var(--color-text-muted)' }}
+            tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)', fontFamily: 'var(--font-mono)' }}
             tickFormatter={yFormatter}
             tickLine={false}
             axisLine={false}
             width={42}
           />
           <Tooltip
-            cursor={{ stroke: 'var(--color-border-strong)', strokeWidth: 1 }}
+            cursor={{ stroke: 'rgba(234,211,45,0.3)', strokeWidth: 1, strokeDasharray: '3 3' }}
             contentStyle={{
-              borderRadius: 12,
-              border: '1px solid var(--color-border)',
-              boxShadow: 'var(--shadow-md)',
+              borderRadius: 6,
+              border: '1px solid rgba(234,211,45,0.3)',
+              background: '#1a1a1a',
+              boxShadow: '0 6px 24px rgba(0,0,0,0.4)',
               fontSize: 12,
               padding: '10px 12px',
+              color: '#fff',
             }}
             labelFormatter={(v) => shortDate(v as string)}
             labelStyle={{
-              fontSize: 11,
-              color: 'var(--color-text-muted)',
+              fontSize: 10,
+              color: 'rgba(255,255,255,0.6)',
               fontWeight: 600,
-              marginBottom: 4,
+              marginBottom: 6,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              fontFamily: 'var(--font-mono)',
             }}
+            itemStyle={{ color: '#fff', fontFamily: 'var(--font-mono)' }}
           />
-          {!title && <Legend wrapperStyle={{ fontSize: 12, paddingTop: 4 }} />}
 
           {lines.map((l, i) => {
             const c = l.color ?? palette[i % palette.length];
@@ -141,9 +137,10 @@ export function TrendChart({
                 dataKey={l.key}
                 name={l.label}
                 stroke={c}
-                strokeWidth={2.2}
+                strokeWidth={2}
                 fill={`url(#grad-${l.key})`}
-                activeDot={{ r: 4, strokeWidth: 0 }}
+                activeDot={{ r: 4, strokeWidth: 0, fill: c }}
+                isAnimationActive={false}
               />
             );
           })}

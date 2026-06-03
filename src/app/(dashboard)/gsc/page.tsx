@@ -1,21 +1,23 @@
 import { KpiCard } from '@/components/ui/kpi-card';
+import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
-import { getSearchConsoleDaily, getTopKeywords, getGa4Daily } from '@/lib/queries';
+import { getSearchConsoleDaily, getTopKeywords } from '@/lib/queries';
 
 export const dynamic = 'force-dynamic';
 const fmt = (n: number) => new Intl.NumberFormat('pt-BR').format(Math.round(n));
 
-export default async function GooglePage() {
-  const [sc, kw, ga4] = await Promise.all([
+export default async function GscPage() {
+  const [sc, kw] = await Promise.all([
     getSearchConsoleDaily(30).catch(() => []),
     getTopKeywords(10).catch(() => []),
-    getGa4Daily(30).catch(() => []),
   ]);
 
   const totalClicks = sc.reduce((s, d) => s + (d.clicks ?? 0), 0);
   const totalImpr = sc.reduce((s, d) => s + (d.impressions ?? 0), 0);
-  const avgPos = sc.length ? sc.reduce((s, d) => s + (d.avg_position ?? 0), 0) / sc.length : 0;
-  const lastGa4 = ga4.at(-1);
+  const avgPos = sc.length
+    ? sc.reduce((s, d) => s + (d.avg_position ?? 0), 0) / sc.length
+    : 0;
+  const avgCtr = totalImpr ? (totalClicks / totalImpr) * 100 : 0;
 
   const sparkClicks = sc.slice(-14).map((d) => d.clicks);
   const sparkImpr = sc.slice(-14).map((d) => d.impressions);
@@ -24,10 +26,10 @@ export default async function GooglePage() {
     <div>
       <header className="page-header">
         <div>
-          <span className="eyebrow">SEO & orgânico</span>
-          <h1>Google</h1>
+          <span className="eyebrow">Web analytics</span>
+          <h1>Google Search Console</h1>
           <p className="subtitle">
-            Performance no Search Console e comportamento dos visitantes orgânicos.
+            Performance orgânica nas buscas — cliques, impressões, CTR e posição.
           </p>
         </div>
         <span className="period-chip">
@@ -36,28 +38,43 @@ export default async function GooglePage() {
       </header>
 
       <section className="kpi-grid">
-        <KpiCard label="Cliques orgânicos" value={fmt(totalClicks)} spark={sparkClicks} />
-        <KpiCard label="Impressões" value={fmt(totalImpr)} spark={sparkImpr} accent="#3b3b3b" />
-        <KpiCard label="Posição média" value={avgPos.toFixed(1)} hint="quanto menor, melhor" accent="#2e7d4f" />
         <KpiCard
-          label="Bounce rate"
-          value={`${((lastGa4?.bounce_rate ?? 0) * 100).toFixed(0)}%`}
-          accent="#b87f00"
+          label="Cliques orgânicos"
+          value={fmt(totalClicks)}
+          spark={sparkClicks}
+          icon={KpiIcons.sessions}
+        />
+        <KpiCard
+          label="Impressões"
+          value={fmt(totalImpr)}
+          spark={sparkImpr}
+          icon={KpiIcons.reach}
+        />
+        <KpiCard
+          label="CTR médio"
+          value={`${avgCtr.toFixed(2)}%`}
+          icon={KpiIcons.roas}
+        />
+        <KpiCard
+          label="Posição média"
+          value={avgPos.toFixed(1)}
+          hint="quanto menor, melhor"
+          icon={KpiIcons.search}
         />
       </section>
 
       <div className="section-title">
-        <h2>Search Console</h2>
-        <span className="hint">Últimos 30 dias</span>
+        <h2>Search Console diário</h2>
+        <span className="hint">30 dias</span>
       </div>
       <TrendChart
         data={sc as unknown as Array<Record<string, string | number>>}
         xKey="date"
         title="Cliques × impressões"
-        subtitle="Volume diário do Search Console"
+        subtitle="Volume diário"
         lines={[
-          { key: 'clicks', label: 'Cliques' },
-          { key: 'impressions', label: 'Impressões', color: '#ead32d' },
+          { key: 'clicks', label: 'Cliques', color: '#ead32d' },
+          { key: 'impressions', label: 'Impressões', color: '#4a90d9' },
         ]}
       />
 
@@ -88,7 +105,7 @@ export default async function GooglePage() {
             ))}
             {kw.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                <td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
                   Sem keywords ainda.
                 </td>
               </tr>

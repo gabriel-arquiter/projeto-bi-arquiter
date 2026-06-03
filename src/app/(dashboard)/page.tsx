@@ -1,4 +1,5 @@
 import { KpiCard } from '@/components/ui/kpi-card';
+import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
 import { getMonthlyOverview, getGa4Daily } from '@/lib/queries';
 
@@ -8,11 +9,14 @@ function fmt(n: number) {
   return new Intl.NumberFormat('pt-BR').format(Math.round(n));
 }
 function brl(n: number) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
-export default async function OverviewPage() {
-  // Tolerante a tabela vazia: tudo retorna [] e a página renderiza zeros.
+export default async function DashboardPage() {
   const [overview, ga4] = await Promise.all([
     getMonthlyOverview().catch(() => []),
     getGa4Daily(30).catch(() => []),
@@ -28,7 +32,6 @@ export default async function OverviewPage() {
   const totalSpend = (last?.meta_spend ?? 0) + (last?.google_spend ?? 0);
   const prevSpend = (prev?.meta_spend ?? 0) + (prev?.google_spend ?? 0);
 
-  // Sparklines: derivados de GA4 (últimos 14d) pra dar contexto nos KPIs
   const lastDays = ga4.slice(-14);
   const sparkSessions = lastDays.map((d) => d.sessions);
   const sparkUsers = lastDays.map((d) => d.users);
@@ -39,7 +42,7 @@ export default async function OverviewPage() {
       <header className="page-header">
         <div>
           <span className="eyebrow">Visão geral</span>
-          <h1>Resumo do Mês</h1>
+          <h1>Dashboard</h1>
           <p className="subtitle">
             Tráfego, mídia paga e conversão consolidados — comparação com o mês anterior.
           </p>
@@ -55,27 +58,28 @@ export default async function OverviewPage() {
           value={fmt(last?.sessions ?? 0)}
           delta={delta(last?.sessions, prev?.sessions)}
           spark={sparkSessions}
+          icon={KpiIcons.sessions}
         />
         <KpiCard
           label="Usuários"
           value={fmt(last?.users ?? 0)}
           delta={delta(last?.users, prev?.users)}
           spark={sparkUsers}
-          accent="#2e7d4f"
+          icon={KpiIcons.users}
         />
         <KpiCard
           label="Leads (mídia)"
           value={fmt(totalLeads)}
           delta={delta(totalLeads, prevLeads)}
           spark={sparkPaid}
-          accent="#3b3b3b"
+          icon={KpiIcons.leads}
         />
         <KpiCard
           label="Investimento"
           value={brl(totalSpend)}
-          delta={delta(totalSpend, prevSpend)}
+          delta={delta(prevSpend, totalSpend)}
           hint="Meta + Google"
-          accent="#b87f00"
+          icon={KpiIcons.money}
         />
       </section>
 
@@ -89,9 +93,9 @@ export default async function OverviewPage() {
         title="Sessões por canal"
         subtitle="Orgânico vs pago vs social"
         lines={[
-          { key: 'sessions', label: 'Total' },
-          { key: 'organic_sessions', label: 'Orgânico', color: '#2e7d4f' },
-          { key: 'paid_sessions', label: 'Pago', color: '#ead32d' },
+          { key: 'sessions', label: 'Total', color: '#ead32d' },
+          { key: 'organic_sessions', label: 'Orgânico', color: '#4a90d9' },
+          { key: 'paid_sessions', label: 'Pago', color: 'rgba(255,255,255,0.25)' },
         ]}
       />
 

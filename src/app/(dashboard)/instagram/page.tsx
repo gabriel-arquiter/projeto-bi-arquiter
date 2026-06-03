@@ -1,37 +1,30 @@
 import { KpiCard } from '@/components/ui/kpi-card';
+import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
-import {
-  getInstagramMetrics,
-  getTopInstagramPosts,
-  getPinterestMetrics,
-} from '@/lib/queries';
+import { getInstagramMetrics, getTopInstagramPosts } from '@/lib/queries';
 
 export const dynamic = 'force-dynamic';
 const fmt = (n: number) => new Intl.NumberFormat('pt-BR').format(Math.round(n));
 
-export default async function SocialPage() {
-  const [ig, posts, pin] = await Promise.all([
+export default async function InstagramPage() {
+  const [ig, posts] = await Promise.all([
     getInstagramMetrics(30).catch(() => []),
     getTopInstagramPosts(6).catch(() => []),
-    getPinterestMetrics(30).catch(() => []),
   ]);
   const lastIg = ig.at(-1);
-  const lastPin = pin.at(-1);
-
   const sparkFollowers = ig.slice(-14).map((d) => d.followers);
   const sparkReach = ig.slice(-14).map((d) => d.reach);
-  const sparkPinImpr = pin.slice(-14).map((d) => d.impressions);
-  const sparkPinSaves = pin.slice(-14).map((d) => d.saves);
+  const avgEng = ig.length
+    ? (ig.reduce((s, d) => s + (d.engagement_rate ?? 0), 0) / ig.length) * 100
+    : 0;
 
   return (
     <div>
       <header className="page-header">
         <div>
-          <span className="eyebrow">Redes sociais</span>
-          <h1>Social</h1>
-          <p className="subtitle">
-            Instagram e Pinterest — alcance, engajamento e melhores posts.
-          </p>
+          <span className="eyebrow">Social analytics</span>
+          <h1>Instagram</h1>
+          <p className="subtitle">Alcance, seguidores, engajamento e melhores posts.</p>
         </div>
         <span className="period-chip">
           <span className="dot" /> Últimos 30 dias
@@ -40,41 +33,40 @@ export default async function SocialPage() {
 
       <section className="kpi-grid">
         <KpiCard
-          label="Seguidores IG"
+          label="Seguidores"
           value={fmt(lastIg?.followers ?? 0)}
           spark={sparkFollowers}
-          accent="#e1306c"
+          icon={KpiIcons.users}
         />
         <KpiCard
-          label="Alcance IG"
+          label="Alcance"
           value={fmt(lastIg?.reach ?? 0)}
           spark={sparkReach}
-          accent="#e1306c"
+          icon={KpiIcons.reach}
         />
         <KpiCard
-          label="Impressões Pinterest"
-          value={fmt(lastPin?.impressions ?? 0)}
-          spark={sparkPinImpr}
-          accent="#e60023"
+          label="Engajamento médio"
+          value={`${avgEng.toFixed(2)}%`}
+          icon={KpiIcons.heart}
         />
         <KpiCard
-          label="Saves Pinterest"
-          value={fmt(lastPin?.saves ?? 0)}
-          spark={sparkPinSaves}
-          accent="#e60023"
+          label="Posts no período"
+          value={fmt(posts.length)}
+          hint="topo de engajamento"
+          icon={KpiIcons.leads}
         />
       </section>
 
       <div className="section-title">
-        <h2>Alcance Instagram</h2>
-        <span className="hint">Últimos 30 dias</span>
+        <h2>Alcance diário</h2>
+        <span className="hint">Contas alcançadas · 30d</span>
       </div>
       <TrendChart
         data={ig as unknown as Array<Record<string, string | number>>}
         xKey="date"
-        title="Alcance diário"
-        subtitle="Contas alcançadas no Instagram"
-        lines={[{ key: 'reach', label: 'Alcance', color: '#e1306c' }]}
+        title="Alcance Instagram"
+        subtitle="Tendência diária"
+        lines={[{ key: 'reach', label: 'Alcance', color: '#ead32d' }]}
       />
 
       <div className="section-title">
@@ -95,7 +87,9 @@ export default async function SocialPage() {
           <tbody>
             {posts.map((p) => (
               <tr key={p.id}>
-                <td><span className="badge">{p.media_type}</span></td>
+                <td>
+                  <span className="badge">{p.media_type}</span>
+                </td>
                 <td className="num">{fmt(p.reach)}</td>
                 <td className="num">{fmt(p.likes)}</td>
                 <td className="num">{fmt(p.saves)}</td>
@@ -104,7 +98,7 @@ export default async function SocialPage() {
             ))}
             {posts.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                <td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
                   Sem posts ainda.
                 </td>
               </tr>
