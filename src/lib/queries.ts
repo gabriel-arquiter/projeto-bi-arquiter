@@ -8,6 +8,13 @@ import type {
   InstagramPost,
   PinterestMetric,
   AdsMetric,
+  DreMonth,
+  CashFlowMonth,
+  FinanceForecastMonth,
+  PipelineStage,
+  LossReason,
+  CrmSegment,
+  AttributionChannel,
 } from '@/types/database';
 import {
   mockMonthlyOverview,
@@ -19,9 +26,16 @@ import {
   mockPinterestMetrics,
   mockMetaAds,
   mockGoogleAds,
+  mockDre,
+  mockCashFlow,
+  mockFinanceForecast,
+  mockCrmPipelines,
+  mockLossReasons,
+  mockCrmSegments,
+  mockAttribution,
 } from '@/lib/mock-data';
 
-// Todas as queries rodam server-side com a sessão do usuário (RLS aplicado).
+// Todas as queries rodam server-side com a sessÃ£o do usuÃ¡rio (RLS aplicado).
 // Com NEXT_PUBLIC_USE_MOCK=1 retornamos mock data, sem tocar no Supabase.
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === '1';
 
@@ -134,6 +148,87 @@ export async function getGoogleAds(days = 30): Promise<AdsMetric[]> {
     .select('*')
     .gte('date', since)
     .order('date', { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+// ───────────────────────────── Financeiro (mart.financeiro / Conta Azul) ─────────────────────────────
+
+export async function getDre(months = 6): Promise<DreMonth[]> {
+  if (USE_MOCK) return mockDre(months);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('finance_dre')
+    .select('*')
+    .order('month', { ascending: true })
+    .limit(months);
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getCashFlow(months = 6): Promise<CashFlowMonth[]> {
+  if (USE_MOCK) return mockCashFlow(months);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('finance_cash_flow')
+    .select('*')
+    .order('month', { ascending: true })
+    .limit(months);
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getFinanceForecast(horizon = 6): Promise<FinanceForecastMonth[]> {
+  if (USE_MOCK) return mockFinanceForecast(horizon);
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('finance_forecast')
+    .select('*')
+    .order('month', { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+// ───────────────────────────── CRM (fct_oportunidades / fct_atribuicao / dim_pessoa) ─────────────────────────────
+
+export async function getCrmPipelines(): Promise<PipelineStage[]> {
+  if (USE_MOCK) return mockCrmPipelines();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('crm_pipeline_stages')
+    .select('*')
+    .order('pipeline', { ascending: true })
+    .order('ordem', { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getLossReasons(): Promise<LossReason[]> {
+  if (USE_MOCK) return mockLossReasons();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('crm_loss_reasons')
+    .select('*')
+    .order('quantidade', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getCrmSegments(): Promise<CrmSegment[]> {
+  if (USE_MOCK) return mockCrmSegments();
+  const supabase = await createClient();
+  const { data, error } = await supabase.from('crm_segments').select('*');
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function getAttribution(): Promise<AttributionChannel[]> {
+  if (USE_MOCK) return mockAttribution();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('crm_attribution')
+    .select('*')
+    .order('receita_atribuida', { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
