@@ -13,7 +13,14 @@ const labels: Record<string, string> = {
   '/google-ads': 'Google Ads',
   '/pinterest-ads': 'Pinterest Ads',
   '/ai': 'Agente IA',
-  '/projecoes': 'Projeções',
+  '/acoes': 'Ações',
+  '/projecoes': 'ProjeÃ§Ãµes',
+  '/financeiro/dre': 'DRE',
+  '/financeiro/cash-flow': 'Cash Flow',
+  '/financeiro/forecast': 'Forecast Financeiro',
+  '/crm/funis': 'Funis',
+  '/crm/segmentacao': 'Segmentação de Base',
+  '/crm/atribuicao': 'Atribuição',
 };
 
 export function Topbar() {
