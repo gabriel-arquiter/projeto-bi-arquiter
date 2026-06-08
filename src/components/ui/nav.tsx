@@ -18,13 +18,13 @@ type Group = {
 
 const groups: Group[] = [
   {
-    title: 'Visão geral',
+    title: 'VisÃ£o geral',
     items: [
-      { href: '/', label: 'Dashboard', icon: '◳' },
+      { href: '/', label: 'Dashboard', icon: 'â³' },
       {
         href: '/investor',
         label: 'Investor View',
-        icon: '◆',
+        icon: 'â',
         badge: { text: 'LIVE', tone: 'gold' },
       },
     ],
@@ -32,40 +32,57 @@ const groups: Group[] = [
   {
     title: 'Social analytics',
     items: [
-      { href: '/instagram', label: 'Instagram', icon: '◎' },
-      { href: '/pinterest', label: 'Pinterest', icon: '◉' },
+      { href: '/instagram', label: 'Instagram', icon: 'â' },
+      { href: '/pinterest', label: 'Pinterest', icon: 'â' },
     ],
   },
   {
     title: 'Web analytics',
     items: [
-      { href: '/ga', label: 'Google Analytics', icon: '◍' },
-      { href: '/gsc', label: 'Google Search Console', icon: '◌' },
+      { href: '/ga', label: 'Google Analytics', icon: 'â' },
+      { href: '/gsc', label: 'Google Search Console', icon: 'â' },
     ],
   },
   {
-    title: 'Mídia paga',
+    title: 'MÃ­dia paga',
     items: [
-      { href: '/meta-ads', label: 'Meta Ads', icon: '◈' },
-      { href: '/google-ads', label: 'Google Ads', icon: '◇' },
-      { href: '/pinterest-ads', label: 'Pinterest Ads', icon: '◊' },
+      { href: '/meta-ads', label: 'Meta Ads', icon: 'â' },
+      { href: '/google-ads', label: 'Google Ads', icon: 'â' },
+      { href: '/pinterest-ads', label: 'Pinterest Ads', icon: 'â' },
     ],
   },
   {
-    title: 'Inteligência',
+    title: 'CRM',
     items: [
-      { href: '/ai', label: 'Agente IA', icon: '✦' },
-      { href: '/projecoes', label: 'Projeções', icon: '✧' },
+      { href: '/crm/funis', label: 'Funis', icon: '⌗' },
+      { href: '/crm/segmentacao', label: 'Segmentação de Base', icon: '◫' },
+      { href: '/crm/atribuicao', label: 'Atribuição', icon: '◑' },
+    ],
+  },
+  {
+    title: 'Financeiro',
+    items: [
+      { href: '/financeiro/dre', label: 'DRE', icon: '▣' },
+      { href: '/financeiro/cash-flow', label: 'Cash Flow', icon: '◷' },
+      { href: '/financeiro/forecast', label: 'Forecast Financeiro', icon: '◵' },
+    ],
+  },
+  {
+    title: 'InteligÃªncia',
+    items: [
+      { href: '/ai', label: 'Agente IA', icon: 'â¦' },
+      { href: '/acoes', label: 'Ações', icon: '⚑' },
+      { href: '/projecoes', label: 'ProjeÃ§Ãµes', icon: 'â§' },
     ],
   },
 ];
 
 const mobileGroups = [
-  { href: '/', label: 'Overview', icon: '◳' },
-  { href: '/instagram', label: 'Social', icon: '◎' },
-  { href: '/ga', label: 'Web', icon: '◍' },
-  { href: '/meta-ads', label: 'Ads', icon: '◈' },
-  { href: '/ai', label: 'IA', icon: '✦' },
+  { href: '/', label: 'Overview', icon: 'â³' },
+  { href: '/meta-ads', label: 'Ads', icon: 'â' },
+  { href: '/financeiro/dre', label: 'Fin', icon: '▣' },
+  { href: '/ai', label: 'IA', icon: 'â¦' },
+  { href: '/investor', label: 'Investor', icon: '◆' },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -270,7 +287,7 @@ export function Nav({ userEmail }: { userEmail: string }) {
         </div>
       </aside>
 
-      {/* Bottom nav mobile — 5 grupos */}
+      {/* Bottom nav mobile â 5 grupos */}
       <nav className="bottom-nav">
         {mobileGroups.map((it) => {
           const active = isActive(pathname, it.href);
