@@ -1,10 +1,10 @@
 :root {
-  /* Paleta obrigatÃ³ria Arquiter */
+  /* Paleta obrigatória Arquiter */
   --color-primary: #333333;
   --color-secondary: #ead32d;
   --color-tertiary: #dcdcdc;
 
-  /* Executive UI â superfÃ­cies escuras */
+  /* Executive UI — superfícies escuras */
   --bg: #0f0f0f;
   --bg-soft: #131313;
   --surface: #161616;
@@ -65,7 +65,7 @@ button {
   font-family: inherit;
 }
 
-/* ââ SuperfÃ­cies ââ */
+/* ── Superfícies ── */
 .surface {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -83,7 +83,7 @@ button {
   border-radius: var(--radius-card);
 }
 
-/* ââ Header de pÃ¡gina ââ */
+/* ── Header de página ── */
 .page-header {
   display: flex;
   align-items: flex-end;
@@ -126,7 +126,7 @@ button {
   line-height: 1.5;
 }
 
-/* Chip de perÃ­odo */
+/* Chip de período */
 .period-chip {
   display: inline-flex;
   align-items: center;
@@ -151,7 +151,7 @@ button {
   box-shadow: 0 0 0 3px rgba(234, 211, 45, 0.18);
 }
 
-/* ââ Section title (label dourada com accent Ã  esquerda) ââ */
+/* ── Section title (label dourada com accent à esquerda) ── */
 .section-title {
   display: flex;
   align-items: center;
@@ -176,7 +176,7 @@ button {
   letter-spacing: 0.08em;
 }
 
-/* ââ KPI grid ââ */
+/* ── KPI grid ── */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -197,7 +197,7 @@ button {
   .kpi-grid-3 { grid-template-columns: 1fr; }
 }
 
-/* ââ KPI card â novo padrÃ£o (sem barra superior, Ã­cone canto, nÃºmero mono) ââ */
+/* ── KPI card — novo padrão (sem barra superior, ícone canto, número mono) ── */
 .kpi {
   position: relative;
   padding: 18px 20px 18px;
@@ -263,7 +263,7 @@ button {
   width: 100%;
 }
 
-/* ââ Chart ââ */
+/* ── Chart ── */
 .chart-card {
   padding: 22px 22px 14px;
 }
@@ -308,7 +308,7 @@ button {
   border-radius: 2px;
 }
 
-/* ââ Tabelas ââ */
+/* ── Tabelas ── */
 .table-wrap {
   padding: 0;
   overflow: hidden;
@@ -345,7 +345,7 @@ button {
   font-feature-settings: 'tnum';
 }
 
-/* ââ Badges & pills ââ */
+/* ── Badges & pills ── */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -385,7 +385,7 @@ button {
 }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* ââ Empty state ââ */
+/* ── Empty state ── */
 .empty-state {
   padding: 28px 22px;
   text-align: center;
@@ -396,7 +396,7 @@ button {
   border-radius: var(--radius-card);
 }
 
-/* ââ Status indicator (topbar) ââ */
+/* ── Status indicator (topbar) ── */
 .status-indicator {
   display: inline-flex;
   align-items: center;
@@ -434,7 +434,7 @@ button {
   border-color: var(--text-subtle);
 }
 
-/* ââ BotÃ£o executivo ââ */
+/* ── Botão executivo ── */
 .btn-exec {
   padding: 10px 18px;
   background: var(--color-secondary);
@@ -468,7 +468,7 @@ button {
   border-color: var(--gold-line);
 }
 
-/* ââ Topbar ââ */
+/* ── Topbar ── */
 .topbar {
   height: var(--topbar-h);
   display: flex;
@@ -495,7 +495,7 @@ button {
   margin-left: 8px;
 }
 
-/* ââ Investor View â funil ââ */
+/* ── Investor View — funil ── */
 .funnel-stage {
   display: flex;
   align-items: center;
@@ -541,7 +541,7 @@ button {
   margin: 0 12px;
 }
 
-/* ââ SÃ­ntese IA (Investor View) ââ */
+/* ── Síntese IA (Investor View) ── */
 .ai-synthesis {
   padding: 22px 24px;
   background: var(--surface);
@@ -568,7 +568,7 @@ button {
   color: var(--text);
 }
 
-/* ââ Agente IA painel ââ */
+/* ── Agente IA painel ── */
 .ai-panel {
   background: var(--surface);
   border: 1px solid var(--gold-line);
