@@ -20,7 +20,7 @@ type Group = {
 
 const groups: Group[] = [
   {
-    title: 'VisÃÂ£o geral',
+    title: 'Visão geral',
     items: [
       { href: '/', label: 'Dashboard', icon: 'dashboard' },
       {
@@ -46,7 +46,7 @@ const groups: Group[] = [
     ],
   },
   {
-    title: 'MÃÂ­dia paga',
+    title: 'Mídia paga',
     items: [
       { href: '/meta-ads', label: 'Meta Ads', icon: 'metaAds' },
       { href: '/google-ads', label: 'Google Ads', icon: 'googleAds' },
@@ -70,20 +70,20 @@ const groups: Group[] = [
     ],
   },
   {
-    title: 'CRM',
+    title: 'Inteligência',
     items: [
       { href: '/ai', label: 'Agente IA', icon: 'ai' },
       { href: '/acoes', label: 'Ações', icon: 'acoes' },
       { href: '/projecoes', label: 'Projeções', icon: 'projecoes' },
-      { href: '/crm/atribuicao', label: 'AtribuiÃ§Ã£o', icon: 'â' },
     ],
   },
-  {
-    title: 'InteligÃÂªncia',
-    items: [
-      { href: '/ai', label: 'Agente IA', icon: 'Ã¢ÂÂ¦' },
-      { href: '/acoes', label: 'AÃ§Ãµes', icon: 'â' },
-      { href: '/projecoes', label: 'ProjeÃÂ§ÃÂµes', icon: 'Ã¢ÂÂ§' },
+];
+
+function isActive(pathname: string, href: string): boolean {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 function IconSlot({ name, active }: { name: keyof typeof NavIcons; active: boolean }) {
   return (
     <span
@@ -104,9 +104,9 @@ function IconSlot({ name, active }: { name: keyof typeof NavIcons; active: boole
   );
 }
 
-    ],
-  },
-];
+export function Nav({ userEmail }: { userEmail: string }) {
+  const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   // Fecha o drawer ao navegar.
@@ -125,18 +125,18 @@ function IconSlot({ name, active }: { name: keyof typeof NavIcons; active: boole
     }
   }, [open]);
 
-const mobileGroups = [
-  { href: '/', label: 'Overview', icon: 'Ã¢ÂÂ³' },
-  { href: '/meta-ads', label: 'Ads', icon: 'Ã¢ÂÂ' },
-  { href: '/financeiro/dre', label: 'Fin', icon: 'â£' },
-  { href: '/ai', label: 'IA', icon: 'Ã¢ÂÂ¦' },
-  { href: '/investor', label: 'Investor', icon: 'â' },
-];
+  async function logout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  }
+
   const currentLabel =
     groups.flatMap((g) => g.items).find((i) => isActive(pathname, i.href))?.label ?? 'Arquiter';
 
-
-function isActive(pathname: string, href: string): boolean {
+  return (
+    <>
       {/* Top bar mobile com hamburger */}
       <header className="mobile-topbar">
         <button onClick={() => setOpen(true)} aria-label="Abrir menu" className="mobile-menu-btn">
@@ -144,18 +144,18 @@ function isActive(pathname: string, href: string): boolean {
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
           <span className="brand-mark">A</span>
-          height: '100vh',
-          borderRight: '1px solid var(--line)',
+          <span
+            style={{
               fontSize: 13,
               fontWeight: 600,
               color: 'var(--text)',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-            marginBottom: 18,
-          }}
+            }}
+          >
             {currentLabel}
-          <span
+          </span>
         </div>
         <span style={{ width: 40 }} aria-hidden />
       </header>
@@ -169,25 +169,25 @@ function isActive(pathname: string, href: string): boolean {
         <div className="sidebar-brand">
           <span className="brand-mark">A</span>
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1, flex: 1 }}>
-              width: 24,
-              height: 24,
-              background: 'var(--color-secondary)',
-              borderRadius: 5,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              color: '#0f0f0f',
-              fontSize: 12,
-              fontFamily: 'var(--font-mono)',
+            <span style={{ fontWeight: 700, letterSpacing: 2, fontSize: 12 }}>ARQUITER</span>
+            <span
+              style={{
+                fontSize: 9.5,
+                color: 'var(--text-subtle)',
+                marginTop: 3,
+                letterSpacing: 0.16,
+                fontFamily: 'var(--font-mono)',
+                textTransform: 'uppercase',
+              }}
+            >
               Data platform
-            }}
-          >
+            </span>
+          </div>
           <button onClick={() => setOpen(false)} aria-label="Fechar menu" className="mobile-close-btn">
             <span style={{ width: 20, height: 20, display: 'inline-flex' }}>{NavIcons.close}</span>
           </button>
-            A
-          </span>
+        </div>
+
         <div className="sidebar-scroll">
           {groups.map((group) => (
             <div key={group.title} style={{ marginBottom: 6 }}>
@@ -199,13 +199,13 @@ function isActive(pathname: string, href: string): boolean {
                     key={it.href}
                     href={it.href}
                     onClick={() => setOpen(false)}
-                    alignItems: 'center',
+                    style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: 11,
                       padding: '9px 12px',
                       borderRadius: 6,
-                    borderRadius: 6,
+                      fontSize: 13,
                       fontWeight: active ? 600 : 500,
                       background: active ? 'var(--gold-bg)' : 'transparent',
                       color: active ? 'var(--color-secondary)' : 'rgba(255,255,255,0.78)',
@@ -215,8 +215,8 @@ function isActive(pathname: string, href: string): boolean {
                         ? '2px solid var(--color-secondary)'
                         : '2px solid transparent',
                       paddingLeft: active ? 10 : 12,
-                    fontWeight: active ? 600 : 500,
-                    background: active ? 'var(--gold-bg)' : 'transparent',
+                    }}
+                  >
                     <IconSlot name={it.icon} active={active} />
                     <span style={{ flex: 1 }}>{it.label}</span>
                     {it.badge && (
@@ -230,25 +230,8 @@ function isActive(pathname: string, href: string): boolean {
             </div>
           ))}
         </div>
-                      fontSize: 13,
-        <div className="sidebar-footer">
-                    }}
-                  >
-                    {it.icon}
-                  </span>
-                  <span style={{ flex: 1 }}>{it.label}</span>
-                  {it.badge && (
-                    <span className={`badge ${it.badge.tone}`} style={{ fontSize: 9 }}>
-                      {it.badge.text}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
 
-        <div style={{ marginTop: 'auto', fontSize: 12, color: 'var(--text-muted)' }}>
+        <div className="sidebar-footer">
           <div
             style={{
               padding: '10px 12px',
@@ -274,28 +257,28 @@ function isActive(pathname: string, href: string): boolean {
             <p style={{ wordBreak: 'break-all', fontSize: 11.5, color: 'var(--text)' }}>
               {userEmail}
             </p>
+          </div>
+          <button
+            onClick={logout}
+            style={{
+              width: '100%',
+              padding: '9px',
+              background: 'transparent',
+              border: '1px solid var(--line-strong)',
               borderRadius: 6,
               color: 'var(--text)',
               cursor: 'pointer',
               fontSize: 12,
               fontWeight: 500,
-      </nav>
-
-      <style>{`
-        .bottom-nav { display: none; }
-        @media (max-width: 820px) {
-          .sidebar-desktop { display: none !important; }
-          .bottom-nav {
-            display: flex;
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: var(--sidebar) !important;
-            border-top: 1px solid var(--line);
-            z-index: 50;
-            padding-bottom: env(safe-area-inset-bottom);
-          }
-        }
-      `}</style>
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              transition: 'background 160ms ease, border-color 160ms ease',
+            }}
+          >
+            Sair
+          </button>
+        </div>
+      </aside>
     </>
   );
 }
