@@ -3,7 +3,7 @@ import './globals.css';
 import { QueryProvider } from '@/components/query-provider';
 
 export const metadata: Metadata = {
-  title: 'Arquiter Â· Web Analytics',
+  title: 'Arquiter · Web Analytics',
   description: 'Dashboard executivo da Arquiter',
 };
 
