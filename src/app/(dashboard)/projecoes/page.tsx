@@ -43,7 +43,7 @@ export default async function ProjecoesPage() {
       <header className="page-header">
         <div>
           <span className="eyebrow">Inteligência · Forecast</span>
-          <h1>ProjeÃ§Ãµes</h1>
+          <h1>Projeções</h1>
           <p className="subtitle">
             Modelos preditivos de leads, tráfego e investimento — projeção de 30/60/90
             dias a partir das séries históricas, com banda de confiança.
