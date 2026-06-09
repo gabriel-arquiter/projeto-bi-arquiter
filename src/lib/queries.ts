@@ -17,26 +17,10 @@ import type {
   AttributionChannel,
   PipelineNurturing,
   ProjectionPoint,
-  DreMonth,
-  CashFlowMonth,
-  FinanceForecastMonth,
-  PipelineStage,
-  LossReason,
-  CrmSegment,
-  AttributionChannel,
 } from '@/types/database';
 import {
   mockMonthlyOverview,
   mockGa4Daily,
-  mockDre,
-  mockCashFlow,
-  mockFinanceForecast,
-  mockCrmPipelines,
-  mockLossReasons,
-  mockCrmSegments,
-  mockAttribution,
-  mockCrmNurturing,
-  mockProjections,
   mockSearchConsoleDaily,
   mockTopKeywords,
   mockInstagramMetrics,
@@ -51,9 +35,11 @@ import {
   mockLossReasons,
   mockCrmSegments,
   mockAttribution,
+  mockCrmNurturing,
+  mockProjections,
 } from '@/lib/mock-data';
 
-// Todas as queries rodam server-side com a sessÃÂ£o do usuÃÂ¡rio (RLS aplicado).
+// Todas as queries rodam server-side com a sessão do usuário (RLS aplicado).
 // Com NEXT_PUBLIC_USE_MOCK=1 retornamos mock data, sem tocar no Supabase.
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === '1';
 
@@ -155,6 +141,20 @@ export async function getMetaAds(days = 30): Promise<AdsMetric[]> {
     .order('date', { ascending: true });
   if (error) throw error;
   return data ?? [];
+}
+
+export async function getGoogleAds(days = 30): Promise<AdsMetric[]> {
+  if (USE_MOCK) return mockGoogleAds(days);
+  const supabase = await createClient();
+  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+  const { data, error } = await supabase
+    .from('google_ads_metrics')
+    .select('*')
+    .gte('date', since)
+    .order('date', { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
 
 // ───────────────────────────── Financeiro / CRM / Projeções ─────────────────────────────
 // Domínios ainda sem tabelas reais no Supabase: enquanto o pipeline (Conta Azul, Funnels,
@@ -259,99 +259,4 @@ export async function getProjections(): Promise<ProjectionPoint[]> {
     const supabase = await createClient();
     return supabase.from('projections').select('*');
   }, () => mockProjections());
-}
-}
-
-export async function getGoogleAds(days = 30): Promise<AdsMetric[]> {
-  if (USE_MOCK) return mockGoogleAds(days);
-  const supabase = await createClient();
-  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
-  const { data, error } = await supabase
-    .from('google_ads_metrics')
-    .select('*')
-    .gte('date', since)
-    .order('date', { ascending: true });
-  if (error) throw error;
-  return data ?? [];
-}
-
-// âââââââââââââââââââââââââââââ Financeiro (mart.financeiro / Conta Azul) âââââââââââââââââââââââââââââ
-
-export async function getDre(months = 6): Promise<DreMonth[]> {
-  if (USE_MOCK) return mockDre(months);
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('finance_dre')
-    .select('*')
-    .order('month', { ascending: true })
-    .limit(months);
-  if (error) throw error;
-  return data ?? [];
-}
-
-export async function getCashFlow(months = 6): Promise<CashFlowMonth[]> {
-  if (USE_MOCK) return mockCashFlow(months);
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('finance_cash_flow')
-    .select('*')
-    .order('month', { ascending: true })
-    .limit(months);
-  if (error) throw error;
-  return data ?? [];
-}
-
-export async function getFinanceForecast(horizon = 6): Promise<FinanceForecastMonth[]> {
-  if (USE_MOCK) return mockFinanceForecast(horizon);
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('finance_forecast')
-    .select('*')
-    .order('month', { ascending: true });
-  if (error) throw error;
-  return data ?? [];
-}
-
-// âââââââââââââââââââââââââââââ CRM (fct_oportunidades / fct_atribuicao / dim_pessoa) âââââââââââââââââââââââââââââ
-
-export async function getCrmPipelines(): Promise<PipelineStage[]> {
-  if (USE_MOCK) return mockCrmPipelines();
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('crm_pipeline_stages')
-    .select('*')
-    .order('pipeline', { ascending: true })
-    .order('ordem', { ascending: true });
-  if (error) throw error;
-  return data ?? [];
-}
-
-export async function getLossReasons(): Promise<LossReason[]> {
-  if (USE_MOCK) return mockLossReasons();
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('crm_loss_reasons')
-    .select('*')
-    .order('quantidade', { ascending: false });
-  if (error) throw error;
-  return data ?? [];
-}
-
-export async function getCrmSegments(): Promise<CrmSegment[]> {
-  if (USE_MOCK) return mockCrmSegments();
-  const supabase = await createClient();
-  const { data, error } = await supabase.from('crm_segments').select('*');
-  if (error) throw error;
-  return data ?? [];
-}
-
-export async function getAttribution(): Promise<AttributionChannel[]> {
-  if (USE_MOCK) return mockAttribution();
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('crm_attribution')
-    .select('*')
-    .order('receita_atribuida', { ascending: false });
-  if (error) throw error;
-  return data ?? [];
 }
