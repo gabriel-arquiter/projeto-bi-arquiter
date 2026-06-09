@@ -15,10 +15,28 @@ import type {
   LossReason,
   CrmSegment,
   AttributionChannel,
+  PipelineNurturing,
+  ProjectionPoint,
+  DreMonth,
+  CashFlowMonth,
+  FinanceForecastMonth,
+  PipelineStage,
+  LossReason,
+  CrmSegment,
+  AttributionChannel,
 } from '@/types/database';
 import {
   mockMonthlyOverview,
   mockGa4Daily,
+  mockDre,
+  mockCashFlow,
+  mockFinanceForecast,
+  mockCrmPipelines,
+  mockLossReasons,
+  mockCrmSegments,
+  mockAttribution,
+  mockCrmNurturing,
+  mockProjections,
   mockSearchConsoleDaily,
   mockTopKeywords,
   mockInstagramMetrics,
@@ -35,7 +53,7 @@ import {
   mockAttribution,
 } from '@/lib/mock-data';
 
-// Todas as queries rodam server-side com a sessÃ£o do usuÃ¡rio (RLS aplicado).
+// Todas as queries rodam server-side com a sessÃÂ£o do usuÃÂ¡rio (RLS aplicado).
 // Com NEXT_PUBLIC_USE_MOCK=1 retornamos mock data, sem tocar no Supabase.
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === '1';
 
@@ -137,6 +155,111 @@ export async function getMetaAds(days = 30): Promise<AdsMetric[]> {
     .order('date', { ascending: true });
   if (error) throw error;
   return data ?? [];
+
+// ───────────────────────────── Financeiro / CRM / Projeções ─────────────────────────────
+// Domínios ainda sem tabelas reais no Supabase: enquanto o pipeline (Conta Azul, Funnels,
+// jobs de forecast) não popula os marts, caímos em mock determinístico para que as
+// visualizações apareçam com números fictícios. Quando a tabela existir e tiver linhas,
+// passa a usar o dado real automaticamente.
+async function withMockFallback<T>(
+  query: () => Promise<{ data: T[] | null; error: unknown }>,
+  mock: () => T[],
+): Promise<T[]> {
+  try {
+    const { data, error } = await query();
+    if (error || !data || data.length === 0) return mock();
+    return data;
+  } catch {
+    return mock();
+  }
+}
+
+export async function getDre(months = 6): Promise<DreMonth[]> {
+  if (USE_MOCK) return mockDre(months);
+  return withMockFallback<DreMonth>(async () => {
+    const supabase = await createClient();
+    return supabase
+      .from('finance_dre')
+      .select('*')
+      .order('month', { ascending: true })
+      .limit(months);
+  }, () => mockDre(months));
+}
+
+export async function getCashFlow(months = 6): Promise<CashFlowMonth[]> {
+  if (USE_MOCK) return mockCashFlow(months);
+  return withMockFallback<CashFlowMonth>(async () => {
+    const supabase = await createClient();
+    return supabase
+      .from('finance_cash_flow')
+      .select('*')
+      .order('month', { ascending: true })
+      .limit(months);
+  }, () => mockCashFlow(months));
+}
+
+export async function getFinanceForecast(horizon = 6): Promise<FinanceForecastMonth[]> {
+  if (USE_MOCK) return mockFinanceForecast(horizon);
+  return withMockFallback<FinanceForecastMonth>(async () => {
+    const supabase = await createClient();
+    return supabase.from('finance_forecast').select('*').order('month', { ascending: true });
+  }, () => mockFinanceForecast(horizon));
+}
+
+export async function getCrmPipelines(): Promise<PipelineStage[]> {
+  if (USE_MOCK) return mockCrmPipelines();
+  return withMockFallback<PipelineStage>(async () => {
+    const supabase = await createClient();
+    return supabase
+      .from('crm_pipeline_stages')
+      .select('*')
+      .order('pipeline', { ascending: true })
+      .order('ordem', { ascending: true });
+  }, () => mockCrmPipelines());
+}
+
+export async function getCrmNurturing(): Promise<PipelineNurturing[]> {
+  if (USE_MOCK) return mockCrmNurturing();
+  return withMockFallback<PipelineNurturing>(async () => {
+    const supabase = await createClient();
+    return supabase.from('crm_nurturing').select('*');
+  }, () => mockCrmNurturing());
+}
+
+export async function getLossReasons(): Promise<LossReason[]> {
+  if (USE_MOCK) return mockLossReasons();
+  return withMockFallback<LossReason>(async () => {
+    const supabase = await createClient();
+    return supabase.from('crm_loss_reasons').select('*').order('quantidade', { ascending: false });
+  }, () => mockLossReasons());
+}
+
+export async function getCrmSegments(): Promise<CrmSegment[]> {
+  if (USE_MOCK) return mockCrmSegments();
+  return withMockFallback<CrmSegment>(async () => {
+    const supabase = await createClient();
+    return supabase.from('crm_segments').select('*');
+  }, () => mockCrmSegments());
+}
+
+export async function getAttribution(): Promise<AttributionChannel[]> {
+  if (USE_MOCK) return mockAttribution();
+  return withMockFallback<AttributionChannel>(async () => {
+    const supabase = await createClient();
+    return supabase
+      .from('crm_attribution')
+      .select('*')
+      .order('receita_atribuida', { ascending: false });
+  }, () => mockAttribution());
+}
+
+export async function getProjections(): Promise<ProjectionPoint[]> {
+  if (USE_MOCK) return mockProjections();
+  return withMockFallback<ProjectionPoint>(async () => {
+    const supabase = await createClient();
+    return supabase.from('projections').select('*');
+  }, () => mockProjections());
+}
 }
 
 export async function getGoogleAds(days = 30): Promise<AdsMetric[]> {
@@ -152,7 +275,7 @@ export async function getGoogleAds(days = 30): Promise<AdsMetric[]> {
   return data ?? [];
 }
 
-// ───────────────────────────── Financeiro (mart.financeiro / Conta Azul) ─────────────────────────────
+// âââââââââââââââââââââââââââââ Financeiro (mart.financeiro / Conta Azul) âââââââââââââââââââââââââââââ
 
 export async function getDre(months = 6): Promise<DreMonth[]> {
   if (USE_MOCK) return mockDre(months);
@@ -189,7 +312,7 @@ export async function getFinanceForecast(horizon = 6): Promise<FinanceForecastMo
   return data ?? [];
 }
 
-// ───────────────────────────── CRM (fct_oportunidades / fct_atribuicao / dim_pessoa) ─────────────────────────────
+// âââââââââââââââââââââââââââââ CRM (fct_oportunidades / fct_atribuicao / dim_pessoa) âââââââââââââââââââââââââââââ
 
 export async function getCrmPipelines(): Promise<PipelineStage[]> {
   if (USE_MOCK) return mockCrmPipelines();
