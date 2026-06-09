@@ -1,13 +1,15 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { NavIcons } from '@/components/ui/nav-icons';
 
 type Item = {
   href: string;
   label: string;
-  icon: string;
+  icon: keyof typeof NavIcons;
   badge?: { text: string; tone: 'gold' };
 };
 
@@ -18,13 +20,13 @@ type Group = {
 
 const groups: Group[] = [
   {
-    title: 'VisÃ£o geral',
+    title: 'VisÃÂ£o geral',
     items: [
-      { href: '/', label: 'Dashboard', icon: 'â³' },
+      { href: '/', label: 'Dashboard', icon: 'dashboard' },
       {
         href: '/investor',
         label: 'Investor View',
-        icon: 'â',
+        icon: 'investor',
         badge: { text: 'LIVE', tone: 'gold' },
       },
     ],
@@ -32,108 +34,141 @@ const groups: Group[] = [
   {
     title: 'Social analytics',
     items: [
-      { href: '/instagram', label: 'Instagram', icon: 'â' },
-      { href: '/pinterest', label: 'Pinterest', icon: 'â' },
+      { href: '/instagram', label: 'Instagram', icon: 'instagram' },
+      { href: '/pinterest', label: 'Pinterest', icon: 'pinterest' },
     ],
   },
   {
     title: 'Web analytics',
     items: [
-      { href: '/ga', label: 'Google Analytics', icon: 'â' },
-      { href: '/gsc', label: 'Google Search Console', icon: 'â' },
+      { href: '/ga', label: 'Google Analytics', icon: 'ga' },
+      { href: '/gsc', label: 'Google Search Console', icon: 'gsc' },
     ],
   },
   {
-    title: 'MÃ­dia paga',
+    title: 'MÃÂ­dia paga',
     items: [
-      { href: '/meta-ads', label: 'Meta Ads', icon: 'â' },
-      { href: '/google-ads', label: 'Google Ads', icon: 'â' },
-      { href: '/pinterest-ads', label: 'Pinterest Ads', icon: 'â' },
+      { href: '/meta-ads', label: 'Meta Ads', icon: 'metaAds' },
+      { href: '/google-ads', label: 'Google Ads', icon: 'googleAds' },
+      { href: '/pinterest-ads', label: 'Pinterest Ads', icon: 'pinterestAds' },
     ],
   },
   {
     title: 'CRM',
     items: [
-      { href: '/crm/funis', label: 'Funis', icon: '⌗' },
-      { href: '/crm/segmentacao', label: 'Segmentação de Base', icon: '◫' },
-      { href: '/crm/atribuicao', label: 'Atribuição', icon: '◑' },
+      { href: '/crm/funis', label: 'Funis', icon: 'funis' },
+      { href: '/crm/segmentacao', label: 'Segmentação de Base', icon: 'segmentacao' },
+      { href: '/crm/atribuicao', label: 'Atribuição', icon: 'atribuicao' },
     ],
   },
   {
     title: 'Financeiro',
     items: [
-      { href: '/financeiro/dre', label: 'DRE', icon: '▣' },
-      { href: '/financeiro/cash-flow', label: 'Cash Flow', icon: '◷' },
-      { href: '/financeiro/forecast', label: 'Forecast Financeiro', icon: '◵' },
+      { href: '/financeiro/dre', label: 'DRE', icon: 'dre' },
+      { href: '/financeiro/cash-flow', label: 'Cash Flow', icon: 'cashflow' },
+      { href: '/financeiro/forecast', label: 'Forecast Financeiro', icon: 'forecast' },
     ],
   },
   {
-    title: 'InteligÃªncia',
+    title: 'CRM',
     items: [
-      { href: '/ai', label: 'Agente IA', icon: 'â¦' },
-      { href: '/acoes', label: 'Ações', icon: '⚑' },
-      { href: '/projecoes', label: 'ProjeÃ§Ãµes', icon: 'â§' },
+      { href: '/ai', label: 'Agente IA', icon: 'ai' },
+      { href: '/acoes', label: 'Ações', icon: 'acoes' },
+      { href: '/projecoes', label: 'Projeções', icon: 'projecoes' },
+      { href: '/crm/atribuicao', label: 'AtribuiÃ§Ã£o', icon: 'â' },
+    ],
+  },
+  {
+    title: 'InteligÃÂªncia',
+    items: [
+      { href: '/ai', label: 'Agente IA', icon: 'Ã¢ÂÂ¦' },
+      { href: '/acoes', label: 'AÃ§Ãµes', icon: 'â' },
+      { href: '/projecoes', label: 'ProjeÃÂ§ÃÂµes', icon: 'Ã¢ÂÂ§' },
+function IconSlot({ name, active }: { name: keyof typeof NavIcons; active: boolean }) {
+  return (
+    <span
+      aria-hidden
+      style={{
+        width: 18,
+        height: 18,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        opacity: active ? 1 : 0.78,
+      }}
+      className="nav-icon"
+    >
+      {NavIcons[name]}
+    </span>
+  );
+}
+
     ],
   },
 ];
+  const [open, setOpen] = useState(false);
+
+  // Fecha o drawer ao navegar.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  // Trava o scroll do body enquanto o drawer está aberto.
+  useEffect(() => {
+    if (open) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [open]);
 
 const mobileGroups = [
-  { href: '/', label: 'Overview', icon: 'â³' },
-  { href: '/meta-ads', label: 'Ads', icon: 'â' },
-  { href: '/financeiro/dre', label: 'Fin', icon: '▣' },
-  { href: '/ai', label: 'IA', icon: 'â¦' },
-  { href: '/investor', label: 'Investor', icon: '◆' },
+  { href: '/', label: 'Overview', icon: 'Ã¢ÂÂ³' },
+  { href: '/meta-ads', label: 'Ads', icon: 'Ã¢ÂÂ' },
+  { href: '/financeiro/dre', label: 'Fin', icon: 'â£' },
+  { href: '/ai', label: 'IA', icon: 'Ã¢ÂÂ¦' },
+  { href: '/investor', label: 'Investor', icon: 'â' },
 ];
+  const currentLabel =
+    groups.flatMap((g) => g.items).find((i) => isActive(pathname, i.href))?.label ?? 'Arquiter';
+
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === '/') return pathname === '/';
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-export function Nav({ userEmail }: { userEmail: string }) {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  async function logout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/login');
-    router.refresh();
-  }
-
-  return (
-    <>
-      {/* Sidebar desktop */}
-      <aside
-        style={{
-          width: 'var(--sidebar-w)',
-          background: 'var(--sidebar)',
-          color: 'var(--text)',
-          padding: '22px 14px 18px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-          position: 'sticky',
-          top: 0,
+      {/* Top bar mobile com hamburger */}
+      <header className="mobile-topbar">
+        <button onClick={() => setOpen(true)} aria-label="Abrir menu" className="mobile-menu-btn">
+          <span style={{ width: 22, height: 22, display: 'inline-flex' }}>{NavIcons.menu}</span>
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          <span className="brand-mark">A</span>
           height: '100vh',
           borderRight: '1px solid var(--line)',
-          overflowY: 'auto',
-        }}
-        className="sidebar-desktop"
-      >
-        {/* Brand */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            padding: '4px 10px 22px',
-            borderBottom: '1px solid var(--line)',
+              fontSize: 13,
+              fontWeight: 600,
+              color: 'var(--text)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             marginBottom: 18,
           }}
-        >
+            {currentLabel}
           <span
-            style={{
+        </div>
+        <span style={{ width: 40 }} aria-hidden />
+      </header>
+
+      {/* Overlay do drawer */}
+      {open && <div className="nav-overlay" onClick={() => setOpen(false)} aria-hidden />}
+
+      {/* Sidebar / drawer */}
+      <aside className={`sidebar ${open ? 'open' : ''}`}>
+        {/* Brand */}
+        <div className="sidebar-brand">
+          <span className="brand-mark">A</span>
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1, flex: 1 }}>
               width: 24,
               height: 24,
               background: 'var(--color-secondary)',
@@ -145,75 +180,58 @@ export function Nav({ userEmail }: { userEmail: string }) {
               color: '#0f0f0f',
               fontSize: 12,
               fontFamily: 'var(--font-mono)',
-              letterSpacing: '-0.02em',
+              Data platform
             }}
           >
+          <button onClick={() => setOpen(false)} aria-label="Fechar menu" className="mobile-close-btn">
+            <span style={{ width: 20, height: 20, display: 'inline-flex' }}>{NavIcons.close}</span>
+          </button>
             A
           </span>
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-            <span style={{ fontWeight: 700, letterSpacing: 2, fontSize: 12 }}>ARQUITER</span>
-            <span
-              style={{
-                fontSize: 9.5,
-                color: 'var(--text-subtle)',
-                marginTop: 3,
-                letterSpacing: 0.16,
-                fontFamily: 'var(--font-mono)',
-                textTransform: 'uppercase',
-              }}
-            >
-              Web analytics
-            </span>
-          </div>
-        </div>
-
-        {groups.map((group) => (
-          <div key={group.title} style={{ marginBottom: 6 }}>
-            <span
-              style={{
-                display: 'block',
-                fontSize: 9.5,
-                letterSpacing: 0.18,
-                color: 'var(--text-subtle)',
-                padding: '12px 12px 6px',
-                textTransform: 'uppercase',
-                fontWeight: 600,
-                fontFamily: 'var(--font-mono)',
-                pointerEvents: 'none',
-              }}
-            >
-              {group.title}
-            </span>
-            {group.items.map((it) => {
-              const active = isActive(pathname, it.href);
-              return (
-                <Link
-                  key={it.href}
-                  href={it.href}
-                  style={{
-                    display: 'flex',
+        <div className="sidebar-scroll">
+          {groups.map((group) => (
+            <div key={group.title} style={{ marginBottom: 6 }}>
+              <span className="nav-group-title">{group.title}</span>
+              {group.items.map((it) => {
+                const active = isActive(pathname, it.href);
+                return (
+                  <Link
+                    key={it.href}
+                    href={it.href}
+                    onClick={() => setOpen(false)}
                     alignItems: 'center',
-                    gap: 11,
-                    padding: '9px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 11,
+                      padding: '9px 12px',
+                      borderRadius: 6,
                     borderRadius: 6,
-                    fontSize: 13,
+                      fontWeight: active ? 600 : 500,
+                      background: active ? 'var(--gold-bg)' : 'transparent',
+                      color: active ? 'var(--color-secondary)' : 'rgba(255,255,255,0.78)',
+                      position: 'relative',
+                      transition: 'background 160ms ease, color 160ms ease',
+                      borderLeft: active
+                        ? '2px solid var(--color-secondary)'
+                        : '2px solid transparent',
+                      paddingLeft: active ? 10 : 12,
                     fontWeight: active ? 600 : 500,
                     background: active ? 'var(--gold-bg)' : 'transparent',
-                    color: active ? 'var(--color-secondary)' : 'rgba(255,255,255,0.78)',
-                    position: 'relative',
-                    transition: 'background 160ms ease, color 160ms ease',
-                    borderLeft: active
-                      ? '2px solid var(--color-secondary)'
-                      : '2px solid transparent',
-                    paddingLeft: active ? 10 : 12,
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 16,
-                      textAlign: 'center',
+                    <IconSlot name={it.icon} active={active} />
+                    <span style={{ flex: 1 }}>{it.label}</span>
+                    {it.badge && (
+                      <span className={`badge ${it.badge.tone}`} style={{ fontSize: 9 }}>
+                        {it.badge.text}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </div>
                       fontSize: 13,
-                      opacity: active ? 1 : 0.7,
+        <div className="sidebar-footer">
                     }}
                   >
                     {it.icon}
@@ -256,76 +274,11 @@ export function Nav({ userEmail }: { userEmail: string }) {
             <p style={{ wordBreak: 'break-all', fontSize: 11.5, color: 'var(--text)' }}>
               {userEmail}
             </p>
-          </div>
-          <button
-            onClick={logout}
-            style={{
-              width: '100%',
-              padding: '9px',
-              background: 'transparent',
-              border: '1px solid var(--line-strong)',
               borderRadius: 6,
               color: 'var(--text)',
               cursor: 'pointer',
               fontSize: 12,
               fontWeight: 500,
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              transition: 'background 160ms ease, border-color 160ms ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--surface-2)';
-              e.currentTarget.style.borderColor = 'var(--gold-line)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = 'var(--line-strong)';
-            }}
-          >
-            Sair
-          </button>
-        </div>
-      </aside>
-
-      {/* Bottom nav mobile â 5 grupos */}
-      <nav className="bottom-nav">
-        {mobileGroups.map((it) => {
-          const active = isActive(pathname, it.href);
-          return (
-            <Link
-              key={it.href}
-              href={it.href}
-              style={{
-                flex: 1,
-                textAlign: 'center',
-                padding: '8px 0 10px',
-                fontSize: 10,
-                color: active ? 'var(--color-secondary)' : 'var(--text-muted)',
-                fontWeight: active ? 600 : 500,
-                position: 'relative',
-                textTransform: 'uppercase',
-                letterSpacing: 0.06,
-              }}
-            >
-              {active && (
-                <span
-                  aria-hidden
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: '30%',
-                    right: '30%',
-                    height: 2,
-                    background: 'var(--color-secondary)',
-                    borderRadius: 2,
-                  }}
-                />
-              )}
-              <div style={{ fontSize: 16, marginBottom: 2 }}>{it.icon}</div>
-              {it.label}
-            </Link>
-          );
-        })}
       </nav>
 
       <style>{`
