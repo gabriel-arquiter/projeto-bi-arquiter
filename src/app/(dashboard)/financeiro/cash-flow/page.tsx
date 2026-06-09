@@ -102,7 +102,6 @@ export default async function CashFlowPage() {
         xKey="month"
         title="Fluxo de caixa mensal"
         subtitle="Em R$"
-        yFormatter={(v) => (Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
         lines={[
           { key: 'entradas', label: 'Entradas', color: '#00d97e' },
           { key: 'saidas', label: 'Saídas', color: '#ff4d4f' },
