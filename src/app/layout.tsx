@@ -1,10 +1,16 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { QueryProvider } from '@/components/query-provider';
 
 export const metadata: Metadata = {
-  title: 'Arquiter · Web Analytics',
+  title: 'Arquiter Â· Web Analytics',
   description: 'Dashboard executivo da Arquiter',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
