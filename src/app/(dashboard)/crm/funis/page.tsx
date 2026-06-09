@@ -1,6 +1,6 @@
 import { KpiCard } from '@/components/ui/kpi-card';
 import { KpiIcons } from '@/components/ui/kpi-icons';
-import { getCrmPipelines, getLossReasons } from '@/lib/queries';
+import { getCrmPipelines, getLossReasons, getCrmNurturing } from '@/lib/queries';
 import type { PipelineStage } from '@/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -13,8 +13,6 @@ const brl = (n: number) =>
   }).format(n);
 const fmt = (n: number) => new Intl.NumberFormat('pt-BR').format(Math.round(n));
 
-const WON_STAGE = 'Ganho';
-
 function byPipeline(rows: PipelineStage[]) {
   const map = new Map<string, PipelineStage[]>();
   for (const r of rows) {
@@ -26,28 +24,37 @@ function byPipeline(rows: PipelineStage[]) {
   return map;
 }
 
+// O estágio "ganho" é sempre o último (maior ordem) de cada pipeline — o nome varia
+// (Ganho / Fechado) conforme a pipeline.
+const wonStage = (stages: PipelineStage[]) => stages[stages.length - 1];
+
 export default async function FunisPage() {
-  const [pipelines, losses] = await Promise.all([
+  const [pipelines, losses, nurturing] = await Promise.all([
     getCrmPipelines().catch(() => []),
     getLossReasons().catch(() => []),
+    getCrmNurturing().catch(() => []),
   ]);
 
   const grouped = byPipeline(pipelines);
 
   // KPIs consolidados
-  const topo = pipelines.filter((s) => s.ordem === 0).reduce((s, r) => s + r.oportunidades, 0);
-  const ganhos = pipelines
-    .filter((s) => s.stage === WON_STAGE)
-    .reduce((s, r) => s + r.oportunidades, 0);
-  const pipelineAberto = pipelines
-    .filter((s) => s.stage !== WON_STAGE)
-    .reduce((s, r) => s + r.valor, 0);
-  const valorGanho = pipelines
-    .filter((s) => s.stage === WON_STAGE)
-    .reduce((s, r) => s + r.valor, 0);
+  let topo = 0;
+  let ganhos = 0;
+  let valorGanho = 0;
+  let pipelineAberto = 0;
+  for (const stages of grouped.values()) {
+    const won = wonStage(stages);
+    topo += stages[0]?.oportunidades ?? 0;
+    ganhos += won?.oportunidades ?? 0;
+    valorGanho += won?.valor ?? 0;
+    pipelineAberto += stages.filter((s) => s !== won).reduce((sum, s) => sum + s.valor, 0);
+  }
   const winRate = topo ? (ganhos / topo) * 100 : 0;
   const ticketMedio = ganhos ? valorGanho / ganhos : 0;
+
   const totalPerdas = losses.reduce((s, l) => s + l.quantidade, 0);
+  const totalNutridos = nurturing.reduce((s, n) => s + n.nutridos, 0);
+  const totalPerdidos = nurturing.reduce((s, n) => s + n.perdidos, 0);
 
   return (
     <div>
@@ -56,8 +63,8 @@ export default async function FunisPage() {
           <span className="eyebrow">CRM · Funnels</span>
           <h1>Funis de venda</h1>
           <p className="subtitle">
-            As 4 pipelines estruturadas no Funnels — Inbound, Outbound, Recontratação e
-            Nutrição — por estágio, com win rate e motivos de perda.
+            As pipelines ativas — Comercial Inbound, Comercial Outbound, Vendas Afiliados,
+            SEBRAE e Recontratação — por estágio, com win rate, nutrição e motivos de perda.
           </p>
         </div>
         <span className="period-chip">
@@ -70,13 +77,13 @@ export default async function FunisPage() {
           label="Oportunidades no topo"
           value={fmt(topo)}
           icon={KpiIcons.leads}
-          hint="entradas nas 4 pipelines"
+          hint="entradas nas pipelines"
         />
         <KpiCard
           label="Pipeline em aberto"
           value={brl(pipelineAberto)}
           icon={KpiIcons.money}
-          hint="valor não fechado"
+          hint="valor estimado por m²"
         />
         <KpiCard
           label="Win rate"
@@ -99,13 +106,13 @@ export default async function FunisPage() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
           gap: 14,
         }}
       >
         {[...grouped.entries()].map(([pipeline, stages]) => {
           const topoStage = stages[0]?.oportunidades ?? 1;
-          const won = stages.find((s) => s.stage === WON_STAGE);
+          const won = wonStage(stages);
           const pwr = topoStage ? ((won?.oportunidades ?? 0) / topoStage) * 100 : 0;
           return (
             <div key={pipeline} className="surface" style={{ padding: '18px 20px' }}>
@@ -115,6 +122,7 @@ export default async function FunisPage() {
                   justifyContent: 'space-between',
                   alignItems: 'baseline',
                   marginBottom: 14,
+                  gap: 8,
                 }}
               >
                 <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
@@ -125,6 +133,7 @@ export default async function FunisPage() {
                     fontSize: 11,
                     fontFamily: 'var(--font-mono)',
                     color: 'var(--color-secondary)',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   win {pwr.toFixed(1)}%
@@ -133,7 +142,7 @@ export default async function FunisPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {stages.map((s) => {
                   const w = topoStage ? Math.max(4, (s.oportunidades / topoStage) * 100) : 0;
-                  const isWon = s.stage === WON_STAGE;
+                  const isWon = s === won;
                   return (
                     <div key={s.stage}>
                       <div
@@ -142,6 +151,7 @@ export default async function FunisPage() {
                           justifyContent: 'space-between',
                           fontSize: 11.5,
                           marginBottom: 4,
+                          gap: 8,
                           color: 'var(--text-muted)',
                         }}
                       >
@@ -152,6 +162,7 @@ export default async function FunisPage() {
                           style={{
                             fontFamily: 'var(--font-mono)',
                             color: 'var(--text)',
+                            whiteSpace: 'nowrap',
                           }}
                         >
                           {fmt(s.oportunidades)} · {brl(s.valor)}
@@ -185,9 +196,74 @@ export default async function FunisPage() {
         })}
       </div>
 
+      <div className="ai-synthesis" style={{ marginTop: 20 }}>
+        <span className="label">◈ Como o valor é estimado</span>
+        <p>
+          Nos estágios iniciais (Novo Lead, Qualificação, Em Prospecção…) ainda não há
+          proposta — o valor é <strong>inferido pela metragem do projeto</strong>, a
+          R$ 100/m², respeitando o <strong>mínimo de aceite de R$ 3.500</strong> (≈ 35 m²).
+          Quando a proposta é enviada, o valor real substitui a estimativa.
+        </p>
+      </div>
+
+      <div className="section-title">
+        <h2>Nutrição</h2>
+        <span className="hint">Perdidos roteados para a pipeline de Nutrição</span>
+      </div>
+      <section className="kpi-grid-3">
+        <KpiCard
+          label="Total perdidos"
+          value={fmt(totalPerdidos)}
+          icon={KpiIcons.users}
+          hint="todas as pipelines"
+        />
+        <KpiCard
+          label="Enviados p/ Nutrição"
+          value={fmt(totalNutridos)}
+          icon={KpiIcons.leads}
+          hint={
+            totalPerdidos ? `${((totalNutridos / totalPerdidos) * 100).toFixed(0)}% dos perdidos` : '—'
+          }
+        />
+        <KpiCard
+          label="Nutridos via tags"
+          value={fmt(totalNutridos)}
+          icon={KpiIcons.heart}
+          hint="reativação por conteúdo"
+        />
+      </section>
+      <div className="surface table-wrap scroll-x" style={{ marginTop: 14 }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Pipeline de origem</th>
+              <th style={{ textAlign: 'right' }}>Perdidos</th>
+              <th style={{ textAlign: 'right' }}>→ Nutrição</th>
+              <th style={{ textAlign: 'right' }}>% roteado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {nurturing.map((n) => (
+              <tr key={n.pipeline}>
+                <td style={{ fontWeight: 600 }}>{n.pipeline}</td>
+                <td className="num" style={{ textAlign: 'right' }}>
+                  {fmt(n.perdidos)}
+                </td>
+                <td className="num" style={{ textAlign: 'right', color: 'var(--color-secondary)' }}>
+                  {fmt(n.nutridos)}
+                </td>
+                <td className="num" style={{ textAlign: 'right', color: 'var(--text-muted)' }}>
+                  {n.perdidos ? ((n.nutridos / n.perdidos) * 100).toFixed(0) : '0'}%
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       <div className="section-title">
         <h2>Motivos de perda</h2>
-        <span className="hint">{fmt(totalPerdas)} deals perdidos · campo do Funnels</span>
+        <span className="hint">{fmt(totalPerdas)} deals · campo do Funnels</span>
       </div>
       <div className="surface table-wrap scroll-x">
         <table>
