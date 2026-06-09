@@ -14,20 +14,13 @@ const labels: Record<string, string> = {
   '/pinterest-ads': 'Pinterest Ads',
   '/ai': 'Agente IA',
   '/acoes': 'Ações',
-  '/acoes': 'AÃ§Ãµes',
+  '/projecoes': 'Projeções',
   '/financeiro/dre': 'DRE',
   '/financeiro/cash-flow': 'Cash Flow',
   '/financeiro/forecast': 'Forecast Financeiro',
   '/crm/funis': 'Funis',
   '/crm/segmentacao': 'Segmentação de Base',
   '/crm/atribuicao': 'Atribuição',
-  '/projecoes': 'ProjeÃÂ§ÃÂµes',
-  '/financeiro/dre': 'DRE',
-  '/financeiro/cash-flow': 'Cash Flow',
-  '/financeiro/forecast': 'Forecast Financeiro',
-  '/crm/funis': 'Funis',
-  '/crm/segmentacao': 'SegmentaÃ§Ã£o de Base',
-  '/crm/atribuicao': 'AtribuiÃ§Ã£o',
 };
 
 export function Topbar() {
