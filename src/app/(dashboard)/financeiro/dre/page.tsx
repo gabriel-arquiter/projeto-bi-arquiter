@@ -122,7 +122,6 @@ export default async function DrePage() {
         xKey="month"
         title="Resultado mensal"
         subtitle="Em R$"
-        yFormatter={(v) => (Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
         lines={[
           { key: 'receita', label: 'Receita líquida', color: '#ead32d' },
           { key: 'ebitda', label: 'EBITDA', color: '#4a90d9' },
