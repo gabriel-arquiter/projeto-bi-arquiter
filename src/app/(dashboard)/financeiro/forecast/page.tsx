@@ -96,7 +96,6 @@ export default async function FinanceForecastPage() {
         xKey="month"
         title="Receita projetada"
         subtitle="Em R$ · banda = intervalo de previsão"
-        yFormatter={(v) => (Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
         lines={[
           { key: 'banda_sup', label: 'Banda superior', color: 'rgba(234,211,45,0.2)' },
           { key: 'receita', label: 'Receita', color: '#ead32d' },
