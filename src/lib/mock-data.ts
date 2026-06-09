@@ -1,5 +1,5 @@
-// Mock data determinÃÂ­stico para preview do dashboard.
-// Ativado quando NEXT_PUBLIC_USE_MOCK=1 Ã¢ÂÂ ver lib/queries.ts.
+// Mock data determinístico para preview do dashboard.
+// Ativado quando NEXT_PUBLIC_USE_MOCK=1 — ver lib/queries.ts.
 import type {
   MonthlyOverview,
   Ga4Metric,
@@ -18,18 +18,11 @@ import type {
   AttributionChannel,
   PipelineNurturing,
   ProjectionPoint,
-  DreMonth,
-  CashFlowMonth,
-  FinanceForecastMonth,
-  PipelineStage,
-  LossReason,
-  CrmSegment,
-  AttributionChannel,
 } from '@/types/database';
 
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
-// PRNG determinÃÂ­stico (mulberry32) para os nÃÂºmeros nÃÂ£o danÃÂ§arem entre renders.
+// PRNG determinístico (mulberry32) para os números não dançarem entre renders.
 function rng(seed: number) {
   let s = seed >>> 0;
   return () => {
@@ -48,7 +41,7 @@ function daysAgo(n: number) {
   return d;
 }
 
-// Curva suave com leve sazonalidade semanal + ruÃÂ­do determinÃÂ­stico.
+// Curva suave com leve sazonalidade semanal + ruído determinístico.
 function wave(
   i: number,
   base: number,
@@ -62,7 +55,7 @@ function wave(
   return Math.max(0, base * (1 + weekly + trend + noise) + amp * (rand() - 0.5));
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ Monthly overview Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ───────────────────────────── Monthly overview ─────────────────────────────
 export function mockMonthlyOverview(): MonthlyOverview[] {
   const rand = rng(101);
   const months = 6;
@@ -88,7 +81,7 @@ export function mockMonthlyOverview(): MonthlyOverview[] {
   return out;
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ GA4 diÃÂ¡rio Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ───────────────────────────── GA4 diário ─────────────────────────────
 export function mockGa4Daily(days = 30): Ga4Metric[] {
   const rand = rng(202);
   const out: Ga4Metric[] = [];
@@ -112,7 +105,7 @@ export function mockGa4Daily(days = 30): Ga4Metric[] {
   return out;
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ Search Console Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ───────────────────────────── Search Console ─────────────────────────────
 export function mockSearchConsoleDaily(days = 30): SearchConsoleMetric[] {
   const rand = rng(303);
   const out: SearchConsoleMetric[] = [];
@@ -134,17 +127,17 @@ export function mockTopKeywords(limit = 10): SearchConsoleKeyword[] {
   const rand = rng(404);
   const kws = [
     'arquitetura residencial sp',
-    'projeto arquitetÃÂ´nico clÃÂ­nica odontolÃÂ³gica',
-    'reforma comercial sÃÂ£o paulo',
-    'projeto retrofit pequeno escritÃÂ³rio',
+    'projeto arquitetônico clínica odontológica',
+    'reforma comercial são paulo',
+    'projeto retrofit pequeno escritório',
     'consultoria interiores corporativo',
-    'arquiteto restaurante cafÃÂ©',
-    'design de interiores consultÃÂ³rio',
-    'projeto arquitetura clÃÂ­nica estÃÂ©tica',
+    'arquiteto restaurante café',
+    'design de interiores consultório',
+    'projeto arquitetura clínica estética',
     'planta humanizada apartamento',
     'projeto fachada loja',
     'arquitetura para coworking',
-    'reforma showroom imobiliÃÂ¡ria',
+    'reforma showroom imobiliária',
   ];
   return kws.slice(0, limit).map((keyword, i) => {
     const impressions = Math.round(2_200 / (i * 0.35 + 1) * (0.85 + rand() * 0.3));
@@ -160,7 +153,7 @@ export function mockTopKeywords(limit = 10): SearchConsoleKeyword[] {
   });
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ Instagram Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ───────────────────────────── Instagram ─────────────────────────────
 export function mockInstagramMetrics(days = 30): InstagramMetric[] {
   const rand = rng(505);
   const baseFollowers = 14_320;
@@ -196,7 +189,7 @@ export function mockTopInstagramPosts(limit = 6): InstagramPost[] {
   });
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ Pinterest Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ───────────────────────────── Pinterest ─────────────────────────────
 export function mockPinterestMetrics(days = 30): PinterestMetric[] {
   const rand = rng(707);
   const out: PinterestMetric[] = [];
@@ -213,16 +206,16 @@ export function mockPinterestMetrics(days = 30): PinterestMetric[] {
   return out;
 }
 
-// Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ Ads Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ───────────────────────────── Ads ─────────────────────────────
 const metaCampaigns = [
-  'TrÃÂ¡fego Ã¢ÂÂ ClÃÂ­nicas SP',
-  'ConversÃÂ£o Ã¢ÂÂ Residencial Premium',
-  'Remarketing Ã¢ÂÂ Site',
+  'Tráfego — Clínicas SP',
+  'Conversão — Residencial Premium',
+  'Remarketing — Site',
 ];
 const googleCampaigns = [
-  'Search Ã¢ÂÂ Arquitetura Comercial',
-  'Performance Max Ã¢ÂÂ Reforma',
-  'Search Ã¢ÂÂ Brand',
+  'Search — Arquitetura Comercial',
+  'Performance Max — Reforma',
+  'Search — Brand',
 ];
 
 function mockAds(seed: number, days: number, campaigns: string[], cpl: number): AdsMetric[] {
@@ -249,6 +242,13 @@ function mockAds(seed: number, days: number, campaigns: string[], cpl: number): 
     }
   }
   return out;
+}
+
+export function mockMetaAds(days = 30): AdsMetric[] {
+  return mockAds(808, days, metaCampaigns, 38);
+}
+export function mockGoogleAds(days = 30): AdsMetric[] {
+  return mockAds(909, days, googleCampaigns, 44);
 }
 
 // ───────────────────────────── Financeiro (Conta Azul) ─────────────────────────────
@@ -632,292 +632,4 @@ export function mockProjections(): ProjectionPoint[] {
     });
   }
   return out;
-}
-
-export function mockMetaAds(days = 30): AdsMetric[] {
-  return mockAds(808, days, metaCampaigns, 38);
-}
-export function mockGoogleAds(days = 30): AdsMetric[] {
-  return mockAds(909, days, googleCampaigns, 44);
-}
-
-// âââââââââââââââââââââââââââââ Financeiro (Conta Azul) âââââââââââââââââââââââââââââ
-// Modelo-base Ãºnico: os trÃªs painÃ©is (DRE, Cash Flow, Forecast) derivam daqui,
-// garantindo que "receita" seja o mesmo nÃºmero entre as telas (fonte Ãºnica da verdade).
-
-interface FinanceBase {
-  month: string;
-  receita_bruta: number;
-  deducoes: number;
-  receita_liquida: number;
-  custos: number;
-  lucro_bruto: number;
-  despesas_marketing: number;
-  despesas_pessoal: number;
-  despesas_administrativas: number;
-  despesas_operacionais: number;
-  ebitda: number;
-  resultado_liquido: number;
-}
-
-function financeBase(months = 6): FinanceBase[] {
-  const rand = rng(1212);
-  const out: FinanceBase[] = [];
-  for (let i = months - 1; i >= 0; i--) {
-    const d = new Date();
-    d.setUTCDate(1);
-    d.setUTCMonth(d.getUTCMonth() - i);
-    const growth = 1 + (months - 1 - i) * 0.055; // crescimento mÃªs a mÃªs
-    const noise = 0.94 + rand() * 0.12;
-
-    const receita_bruta = Math.round(148_000 * growth * noise);
-    const deducoes = Math.round(receita_bruta * 0.0865); // Simples Nacional aprox.
-    const receita_liquida = receita_bruta - deducoes;
-    const custos = Math.round(receita_bruta * (0.205 + (rand() - 0.5) * 0.02));
-    const lucro_bruto = receita_liquida - custos;
-
-    const despesas_marketing = Math.round(receita_bruta * (0.16 + (rand() - 0.5) * 0.02));
-    const despesas_pessoal = Math.round(receita_bruta * (0.285 + (rand() - 0.5) * 0.015));
-    const despesas_administrativas = Math.round(receita_bruta * (0.075 + (rand() - 0.5) * 0.01));
-    const despesas_operacionais =
-      despesas_marketing + despesas_pessoal + despesas_administrativas;
-
-    const ebitda = lucro_bruto - despesas_operacionais;
-    const resultado_liquido = Math.round(ebitda - receita_bruta * 0.018); // dep. + financeiras
-
-    out.push({
-      month: isoDate(d),
-      receita_bruta,
-      deducoes,
-      receita_liquida,
-      custos,
-      lucro_bruto,
-      despesas_marketing,
-      despesas_pessoal,
-      despesas_administrativas,
-      despesas_operacionais,
-      ebitda,
-      resultado_liquido,
-    });
-  }
-  return out;
-}
-
-export function mockDre(months = 6): DreMonth[] {
-  return financeBase(months).map((m) => ({
-    month: m.month,
-    receita_bruta: m.receita_bruta,
-    deducoes: m.deducoes,
-    receita_liquida: m.receita_liquida,
-    custos: m.custos,
-    lucro_bruto: m.lucro_bruto,
-    despesas_marketing: m.despesas_marketing,
-    despesas_pessoal: m.despesas_pessoal,
-    despesas_administrativas: m.despesas_administrativas,
-    despesas_operacionais: m.despesas_operacionais,
-    ebitda: m.ebitda,
-    resultado_liquido: m.resultado_liquido,
-  }));
-}
-
-export function mockCashFlow(months = 6): CashFlowMonth[] {
-  const base = financeBase(months);
-  const rand = rng(1313);
-  const out: CashFlowMonth[] = [];
-  let saldo = 92_000; // saldo de caixa inicial
-  for (let i = 0; i < base.length; i++) {
-    const m = base[i];
-    const prev = base[i - 1];
-    // Regime de caixa: recebe parte do faturamento do mÃªs + parte do mÃªs anterior.
-    const entradas = Math.round(
-      m.receita_bruta * 0.62 + (prev ? prev.receita_bruta * 0.34 : m.receita_bruta * 0.3),
-    );
-    const saidas = Math.round(
-      (m.custos + m.despesas_operacionais + m.deducoes) * (0.97 + rand() * 0.04),
-    );
-    const saldo_inicial = saldo;
-    const saldo_final = saldo_inicial + entradas - saidas;
-    saldo = saldo_final;
-    out.push({
-      month: m.month,
-      saldo_inicial,
-      entradas,
-      saidas,
-      saldo_final,
-      a_receber: Math.round(m.receita_bruta * 0.41 * (0.9 + rand() * 0.2)),
-      a_pagar: Math.round((m.custos + m.despesas_operacionais) * 0.22 * (0.9 + rand() * 0.2)),
-    });
-  }
-  return out;
-}
-
-export function mockFinanceForecast(horizon = 6): FinanceForecastMonth[] {
-  const base = financeBase(6);
-  const out: FinanceForecastMonth[] = [];
-
-  // HistÃ³rico real
-  for (const m of base) {
-    out.push({
-      month: m.month,
-      tipo: 'real',
-      receita: m.receita_bruta,
-      custos: m.custos + m.despesas_operacionais,
-      resultado: m.resultado_liquido,
-    });
-  }
-
-  // ProjeÃ§Ã£o: tendÃªncia dos Ãºltimos meses + banda de confianÃ§a que alarga no tempo.
-  const last = base[base.length - 1];
-  const prev = base[base.length - 2] ?? base[base.length - 1];
-  const growth = prev.receita_bruta ? last.receita_bruta / prev.receita_bruta : 1.05;
-  const g = Math.min(1.09, Math.max(1.02, growth)); // ancorada entre 2% e 9% a.m.
-
-  const custoRatio = (last.custos + last.despesas_operacionais) / last.receita_bruta;
-  for (let k = 1; k <= horizon; k++) {
-    const d = new Date(last.month);
-    d.setUTCMonth(d.getUTCMonth() + k);
-    const receita = Math.round(last.receita_bruta * Math.pow(g, k));
-    const band = 0.05 + k * 0.025; // Â±5% no 1Âº mÃªs, alargando ~2,5pp/mÃªs
-    const custos = Math.round(receita * custoRatio);
-    out.push({
-      month: isoDate(d),
-      tipo: 'previsto',
-      receita,
-      receita_low: Math.round(receita * (1 - band)),
-      receita_high: Math.round(receita * (1 + band)),
-      custos,
-      resultado: Math.round(receita * 0.91 - custos),
-    });
-  }
-  return out;
-}
-
-// âââââââââââââââââââââââââââââ CRM (Funnels / GoHighLevel) âââââââââââââââââââââââââââââ
-
-const TICKET_MEDIO = 18_500; // ticket mÃ©dio de projeto de arquitetura
-
-// Os 4 pipelines de venda jÃ¡ estruturados no Funnels. Cada um tem volume de topo
-// e perfil de conversÃ£o distintos (ex.: Outbound entra mais frio, RecontrataÃ§Ã£o fecha melhor).
-const PIPELINES: Array<{ nome: string; topo: number; conv: number[] }> = [
-  // conv = taxa de passagem de cada estÃ¡gio para o prÃ³ximo (5 passos â 6 estÃ¡gios)
-  { nome: 'Inbound', topo: 320, conv: [0.62, 0.55, 0.48, 0.6, 0.52] },
-  { nome: 'Outbound', topo: 540, conv: [0.34, 0.42, 0.4, 0.5, 0.44] },
-  { nome: 'RecontrataÃ§Ã£o', topo: 88, conv: [0.78, 0.72, 0.68, 0.74, 0.66] },
-  { nome: 'NutriÃ§Ã£o', topo: 410, conv: [0.28, 0.46, 0.5, 0.55, 0.5] },
-];
-
-const STAGES = [
-  'Novo lead',
-  'Contato feito',
-  'QualificaÃ§Ã£o (SPICED)',
-  'Proposta',
-  'NegociaÃ§Ã£o',
-  'Ganho',
-];
-
-export function mockCrmPipelines(): PipelineStage[] {
-  const rand = rng(1414);
-  const out: PipelineStage[] = [];
-  for (const p of PIPELINES) {
-    let count = p.topo;
-    for (let s = 0; s < STAGES.length; s++) {
-      const oportunidades = Math.round(count * (0.95 + rand() * 0.1));
-      // Valor: estÃ¡gios abertos somam pipeline; o Ãºltimo (Ganho) Ã© receita fechada.
-      const valor = Math.round(oportunidades * TICKET_MEDIO * (0.9 + rand() * 0.2));
-      out.push({
-        pipeline: p.nome,
-        stage: STAGES[s],
-        ordem: s,
-        oportunidades,
-        valor,
-      });
-      if (s < p.conv.length) count = count * p.conv[s];
-    }
-  }
-  return out;
-}
-
-export function mockLossReasons(): LossReason[] {
-  const rand = rng(1515);
-  const motivos = [
-    'PreÃ§o acima do orÃ§amento',
-    'Sem fit / fora do ICP',
-    'Timing â projeto adiado',
-    'Escolheu concorrente',
-    'Sem resposta / perdeu contato',
-  ];
-  return motivos
-    .map((motivo, i) => {
-      const quantidade = Math.round((46 / (i * 0.5 + 1)) * (0.85 + rand() * 0.3));
-      return {
-        motivo,
-        quantidade,
-        valor_perdido: Math.round(quantidade * TICKET_MEDIO * (0.8 + rand() * 0.4)),
-      };
-    })
-    .sort((a, b) => b.quantidade - a.quantidade);
-}
-
-export function mockCrmSegments(): CrmSegment[] {
-  const rand = rng(1616);
-  const def: Array<{ dimensao: CrmSegment['dimensao']; segmentos: string[]; base: number }> = [
-    { dimensao: 'temperatura', segmentos: ['Quente', 'Morno', 'Frio'], base: 1400 },
-    {
-      dimensao: 'vertical',
-      segmentos: [
-        'ClÃ­nicas & Odontologia',
-        'Residencial premium',
-        'Comercial & Corporativo',
-        'EstÃ©tica & Bem-estar',
-        'Gastronomia',
-        'Varejo & Franquias',
-      ],
-      base: 760,
-    },
-    {
-      dimensao: 'classificacao',
-      segmentos: ['Lead', 'MQL', 'SQL', 'Cliente'],
-      base: 1100,
-    },
-  ];
-  const out: CrmSegment[] = [];
-  for (const d of def) {
-    d.segmentos.forEach((segmento, i) => {
-      const contatos = Math.round((d.base / (i * 0.45 + 1)) * (0.85 + rand() * 0.3));
-      out.push({
-        dimensao: d.dimensao,
-        segmento,
-        contatos,
-        valor_pipeline: Math.round(contatos * TICKET_MEDIO * (0.12 + rand() * 0.1)),
-      });
-    });
-  }
-  return out;
-}
-
-export function mockAttribution(): AttributionChannel[] {
-  const rand = rng(1717);
-  const canais: Array<{ canal: string; source: string; medium: string; peso: number }> = [
-    { canal: 'Google Ads', source: 'google', medium: 'cpc', peso: 1.0 },
-    { canal: 'Meta Ads', source: 'meta', medium: 'paid_social', peso: 0.92 },
-    { canal: 'OrgÃ¢nico / SEO', source: 'google', medium: 'organic', peso: 0.7 },
-    { canal: 'Instagram orgÃ¢nico', source: 'instagram', medium: 'social', peso: 0.5 },
-    { canal: 'LinkedIn', source: 'linkedin', medium: 'social', peso: 0.42 },
-    { canal: 'IndicaÃ§Ã£o', source: 'referral', medium: 'referral', peso: 0.6 },
-    { canal: 'Direto', source: 'direct', medium: 'none', peso: 0.38 },
-  ];
-  return canais.map((c) => {
-    const first = Math.round(120 * c.peso * (0.85 + rand() * 0.3));
-    const last = Math.round(96 * c.peso * (0.85 + rand() * 0.3));
-    const assist = Math.round(180 * c.peso * (0.85 + rand() * 0.3));
-    return {
-      canal: c.canal,
-      utm_source: c.source,
-      utm_medium: c.medium,
-      first_touch: first,
-      last_touch: last,
-      assist,
-      receita_atribuida: Math.round(last * TICKET_MEDIO * (0.85 + rand() * 0.3)),
-    };
-  });
 }
