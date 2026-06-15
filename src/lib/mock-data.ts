@@ -19,7 +19,7 @@ import type {
   PipelineNurturing,
   ProjectionPoint,
 } from '@/types/database';
-import { addDays, defaultRange, type DateRange } from '@/lib/period';
+import { addDays, defaultRange, monthsInRange, type DateRange } from '@/lib/period';
 
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -292,7 +292,12 @@ interface FinanceBase {
   resultado_liquido: number;
 }
 
-function financeBase(months = 6): FinanceBase[] {
+// Geramos sempre uma janela ampla e determinística de meses; as queries recortam
+// para os meses que caem no intervalo selecionado (monthsInRange). Assim, qualquer
+// período dentro dos últimos ~13 meses devolve dados estáveis.
+const FIN_MONTHS = 13;
+
+function financeBase(months = FIN_MONTHS): FinanceBase[] {
   const rand = rng(1212);
   const out: FinanceBase[] = [];
   for (let i = months - 1; i >= 0; i--) {
@@ -335,25 +340,29 @@ function financeBase(months = 6): FinanceBase[] {
   return out;
 }
 
-export function mockDre(months = 6): DreMonth[] {
-  return financeBase(months).map((m) => ({
-    month: m.month,
-    receita_bruta: m.receita_bruta,
-    deducoes: m.deducoes,
-    receita_liquida: m.receita_liquida,
-    custos: m.custos,
-    lucro_bruto: m.lucro_bruto,
-    despesas_marketing: m.despesas_marketing,
-    despesas_pessoal: m.despesas_pessoal,
-    despesas_administrativas: m.despesas_administrativas,
-    despesas_operacionais: m.despesas_operacionais,
-    ebitda: m.ebitda,
-    resultado_liquido: m.resultado_liquido,
-  }));
+export function mockDre(range: DateRange = defaultRange()): DreMonth[] {
+  const keep = new Set(monthsInRange(range));
+  return financeBase(FIN_MONTHS)
+    .map((m) => ({
+      month: m.month,
+      receita_bruta: m.receita_bruta,
+      deducoes: m.deducoes,
+      receita_liquida: m.receita_liquida,
+      custos: m.custos,
+      lucro_bruto: m.lucro_bruto,
+      despesas_marketing: m.despesas_marketing,
+      despesas_pessoal: m.despesas_pessoal,
+      despesas_administrativas: m.despesas_administrativas,
+      despesas_operacionais: m.despesas_operacionais,
+      ebitda: m.ebitda,
+      resultado_liquido: m.resultado_liquido,
+    }))
+    .filter((m) => keep.has(m.month));
 }
 
-export function mockCashFlow(months = 6): CashFlowMonth[] {
-  const base = financeBase(months);
+export function mockCashFlow(range: DateRange = defaultRange()): CashFlowMonth[] {
+  const keep = new Set(monthsInRange(range));
+  const base = financeBase(FIN_MONTHS);
   const rand = rng(1313);
   const out: CashFlowMonth[] = [];
   let saldo = 92_000; // saldo de caixa inicial
@@ -380,15 +389,17 @@ export function mockCashFlow(months = 6): CashFlowMonth[] {
       a_pagar: Math.round((m.custos + m.despesas_operacionais) * 0.22 * (0.9 + rand() * 0.2)),
     });
   }
-  return out;
+  return out.filter((r) => keep.has(r.month));
 }
 
-export function mockFinanceForecast(horizon = 6): FinanceForecastMonth[] {
-  const base = financeBase(6);
+export function mockFinanceForecast(range: DateRange = defaultRange()): FinanceForecastMonth[] {
+  const base = financeBase(FIN_MONTHS);
+  const keep = new Set(monthsInRange(range));
   const out: FinanceForecastMonth[] = [];
 
-  // Histórico real
+  // Histórico real — recortado aos meses do período selecionado.
   for (const m of base) {
+    if (!keep.has(m.month)) continue;
     out.push({
       month: m.month,
       tipo: 'real',
@@ -398,11 +409,12 @@ export function mockFinanceForecast(horizon = 6): FinanceForecastMonth[] {
     });
   }
 
-  // Projeção: tendência dos últimos meses + banda de confiança que alarga no tempo.
+  // Projeção sempre a partir do último mês real (mês corrente), horizonte fixo.
   const last = base[base.length - 1];
   const prev = base[base.length - 2] ?? base[base.length - 1];
   const growth = prev.receita_bruta ? last.receita_bruta / prev.receita_bruta : 1.05;
   const g = Math.min(1.09, Math.max(1.02, growth)); // ancorada entre 2% e 9% a.m.
+  const horizon = 6;
 
   const custoRatio = (last.custos + last.despesas_operacionais) / last.receita_bruta;
   for (let k = 1; k <= horizon; k++) {

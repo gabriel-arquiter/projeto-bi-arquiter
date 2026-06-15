@@ -38,7 +38,7 @@ import {
   mockCrmNurturing,
   mockProjections,
 } from '@/lib/mock-data';
-import { defaultRange, type DateRange } from '@/lib/period';
+import { defaultRange, monthStart, monthsInRange, type DateRange } from '@/lib/period';
 
 // Todas as queries rodam server-side com a sessão do usuário (RLS aplicado).
 // Com NEXT_PUBLIC_USE_MOCK=1 retornamos mock data, sem tocar no Supabase.
@@ -181,36 +181,50 @@ async function withMockFallback<T>(
   }
 }
 
-export async function getDre(months = 6): Promise<DreMonth[]> {
-  if (USE_MOCK) return mockDre(months);
+export async function getDre(range: DateRange = defaultRange()): Promise<DreMonth[]> {
+  if (USE_MOCK) return mockDre(range);
   return withMockFallback<DreMonth>(async () => {
     const supabase = await createClient();
     return supabase
       .from('finance_dre')
       .select('*')
-      .order('month', { ascending: true })
-      .limit(months);
-  }, () => mockDre(months));
+      .gte('month', monthStart(range.from))
+      .lte('month', monthStart(range.to))
+      .order('month', { ascending: true });
+  }, () => mockDre(range));
 }
 
-export async function getCashFlow(months = 6): Promise<CashFlowMonth[]> {
-  if (USE_MOCK) return mockCashFlow(months);
+export async function getCashFlow(range: DateRange = defaultRange()): Promise<CashFlowMonth[]> {
+  if (USE_MOCK) return mockCashFlow(range);
   return withMockFallback<CashFlowMonth>(async () => {
     const supabase = await createClient();
     return supabase
       .from('finance_cash_flow')
       .select('*')
-      .order('month', { ascending: true })
-      .limit(months);
-  }, () => mockCashFlow(months));
+      .gte('month', monthStart(range.from))
+      .lte('month', monthStart(range.to))
+      .order('month', { ascending: true });
+  }, () => mockCashFlow(range));
 }
 
-export async function getFinanceForecast(horizon = 6): Promise<FinanceForecastMonth[]> {
-  if (USE_MOCK) return mockFinanceForecast(horizon);
+export async function getFinanceForecast(
+  range: DateRange = defaultRange(),
+): Promise<FinanceForecastMonth[]> {
+  if (USE_MOCK) return mockFinanceForecast(range);
   return withMockFallback<FinanceForecastMonth>(async () => {
     const supabase = await createClient();
-    return supabase.from('finance_forecast').select('*').order('month', { ascending: true });
-  }, () => mockFinanceForecast(horizon));
+    const { data, error } = await supabase
+      .from('finance_forecast')
+      .select('*')
+      .order('month', { ascending: true });
+    // Mantém toda a projeção (previsto) e recorta o histórico (real) ao período.
+    const keep = new Set(monthsInRange(range));
+    const filtered =
+      data?.filter(
+        (r: FinanceForecastMonth) => r.tipo === 'previsto' || keep.has(monthStart(r.month)),
+      ) ?? null;
+    return { data: filtered, error };
+  }, () => mockFinanceForecast(range));
 }
 
 export async function getCrmPipelines(): Promise<PipelineStage[]> {

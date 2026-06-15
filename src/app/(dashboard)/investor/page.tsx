@@ -12,7 +12,7 @@ import {
   getDre,
   getCashFlow,
 } from '@/lib/queries';
-import { resolvePeriod, type PageSearchParams } from '@/lib/period';
+import { resolvePeriod, lastMonthsRange, type PageSearchParams } from '@/lib/period';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,8 +43,8 @@ export default async function InvestorViewPage({
     getPinterestMetrics(period.range).catch(() => []),
     getMetaAds(period.range).catch(() => []),
     getGoogleAds(period.range).catch(() => []),
-    getDre(6).catch(() => []),
-    getCashFlow(6).catch(() => []),
+    getDre(lastMonthsRange(6)).catch(() => []),
+    getCashFlow(lastMonthsRange(6)).catch(() => []),
   ]);
 
   const last = overview.at(-1);

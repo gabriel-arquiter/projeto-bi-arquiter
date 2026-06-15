@@ -24,8 +24,9 @@ const labels: Record<string, string> = {
   '/crm/atribuicao': 'Atribuição',
 };
 
-// Rotas com séries diárias, onde o seletor de período faz sentido.
-// As páginas mensais (Financeiro/CRM) não recebem o seletor.
+// Rotas onde o seletor de período aparece. As diárias filtram por intervalo de
+// dias; as de Financeiro recortam por mês dentro do intervalo; as de CRM são
+// snapshots (o seletor aparece por consistência, mas os números não mudam).
 const PERIOD_ROUTES = new Set([
   '/',
   '/investor',
@@ -35,6 +36,12 @@ const PERIOD_ROUTES = new Set([
   '/gsc',
   '/meta-ads',
   '/google-ads',
+  '/financeiro/dre',
+  '/financeiro/cash-flow',
+  '/financeiro/forecast',
+  '/crm/funis',
+  '/crm/segmentacao',
+  '/crm/atribuicao',
 ]);
 
 export function Topbar() {

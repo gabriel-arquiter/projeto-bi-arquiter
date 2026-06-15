@@ -73,6 +73,37 @@ export function formatRangeLabel(range: DateRange): string {
   return `${dmy(range.from)} – ${dmy(range.to)}`;
 }
 
+// ── Helpers mensais (usados pelas páginas de Financeiro, que são mensais) ──
+
+export function monthStart(iso: string): string {
+  return `${iso.slice(0, 7)}-01`;
+}
+
+function shiftMonth(monthStartIso: string, n: number): string {
+  const d = new Date(`${monthStartIso}T00:00:00Z`);
+  d.setUTCMonth(d.getUTCMonth() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+// Meses (YYYY-MM-01) que se sobrepõem ao intervalo, em ordem crescente.
+export function monthsInRange(range: DateRange): string[] {
+  const out: string[] = [];
+  let cur = monthStart(range.from);
+  const end = monthStart(range.to);
+  while (cur <= end) {
+    out.push(cur);
+    cur = shiftMonth(cur, 1);
+  }
+  return out;
+}
+
+// Janela fixa dos últimos N meses (para visões que não dependem do seletor).
+export function lastMonthsRange(n: number): DateRange {
+  const to = todayISO();
+  const from = shiftMonth(monthStart(to), -(n - 1));
+  return { from, to };
+}
+
 const one = (v: string | string[] | undefined): string | undefined =>
   Array.isArray(v) ? v[0] : v;
 
