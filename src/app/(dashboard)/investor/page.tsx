@@ -12,6 +12,7 @@ import {
   getDre,
   getCashFlow,
 } from '@/lib/queries';
+import { resolvePeriod, type PageSearchParams } from '@/lib/period';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,15 +29,20 @@ function delta(a?: number, b?: number) {
   return ((a - b) / b) * 100;
 }
 
-export default async function InvestorViewPage() {
+export default async function InvestorViewPage({
+  searchParams,
+}: {
+  searchParams: PageSearchParams;
+}) {
+  const period = resolvePeriod(searchParams);
   const [overview, ga4, sc, ig, pin, meta, google, dre, cashFlow] = await Promise.all([
     getMonthlyOverview().catch(() => []),
-    getGa4Daily(30).catch(() => []),
-    getSearchConsoleDaily(30).catch(() => []),
-    getInstagramMetrics(30).catch(() => []),
-    getPinterestMetrics(30).catch(() => []),
-    getMetaAds(30).catch(() => []),
-    getGoogleAds(30).catch(() => []),
+    getGa4Daily(period.range).catch(() => []),
+    getSearchConsoleDaily(period.range).catch(() => []),
+    getInstagramMetrics(period.range).catch(() => []),
+    getPinterestMetrics(period.range).catch(() => []),
+    getMetaAds(period.range).catch(() => []),
+    getGoogleAds(period.range).catch(() => []),
     getDre(6).catch(() => []),
     getCashFlow(6).catch(() => []),
   ]);
@@ -179,8 +185,6 @@ export default async function InvestorViewPage() {
     ),
   });
 
-  const monthName = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-
   return (
     <div>
       <header className="page-header">
@@ -197,7 +201,7 @@ export default async function InvestorViewPage() {
           </p>
         </div>
         <span className="period-chip">
-          <span className="dot" /> {monthName}
+          <span className="dot" /> {period.label}
         </span>
       </header>
 

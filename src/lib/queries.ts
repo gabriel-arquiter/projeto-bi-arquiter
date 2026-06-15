@@ -38,6 +38,7 @@ import {
   mockCrmNurturing,
   mockProjections,
 } from '@/lib/mock-data';
+import { defaultRange, type DateRange } from '@/lib/period';
 
 // Todas as queries rodam server-side com a sessão do usuário (RLS aplicado).
 // Com NEXT_PUBLIC_USE_MOCK=1 retornamos mock data, sem tocar no Supabase.
@@ -54,27 +55,29 @@ export async function getMonthlyOverview(): Promise<MonthlyOverview[]> {
   return data ?? [];
 }
 
-export async function getGa4Daily(days = 30): Promise<Ga4Metric[]> {
-  if (USE_MOCK) return mockGa4Daily(days);
+export async function getGa4Daily(range: DateRange = defaultRange()): Promise<Ga4Metric[]> {
+  if (USE_MOCK) return mockGa4Daily(range);
   const supabase = await createClient();
-  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from('ga4_metrics')
     .select('*')
-    .gte('date', since)
+    .gte('date', range.from)
+    .lte('date', range.to)
     .order('date', { ascending: true });
   if (error) throw error;
   return data ?? [];
 }
 
-export async function getSearchConsoleDaily(days = 30): Promise<SearchConsoleMetric[]> {
-  if (USE_MOCK) return mockSearchConsoleDaily(days);
+export async function getSearchConsoleDaily(
+  range: DateRange = defaultRange(),
+): Promise<SearchConsoleMetric[]> {
+  if (USE_MOCK) return mockSearchConsoleDaily(range);
   const supabase = await createClient();
-  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from('search_console_metrics')
     .select('*')
-    .gte('date', since)
+    .gte('date', range.from)
+    .lte('date', range.to)
     .order('date', { ascending: true });
   if (error) throw error;
   return data ?? [];
@@ -92,14 +95,16 @@ export async function getTopKeywords(limit = 10): Promise<SearchConsoleKeyword[]
   return data ?? [];
 }
 
-export async function getInstagramMetrics(days = 30): Promise<InstagramMetric[]> {
-  if (USE_MOCK) return mockInstagramMetrics(days);
+export async function getInstagramMetrics(
+  range: DateRange = defaultRange(),
+): Promise<InstagramMetric[]> {
+  if (USE_MOCK) return mockInstagramMetrics(range);
   const supabase = await createClient();
-  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from('instagram_metrics')
     .select('*')
-    .gte('date', since)
+    .gte('date', range.from)
+    .lte('date', range.to)
     .order('date', { ascending: true });
   if (error) throw error;
   return data ?? [];
@@ -117,40 +122,42 @@ export async function getTopInstagramPosts(limit = 6): Promise<InstagramPost[]> 
   return data ?? [];
 }
 
-export async function getPinterestMetrics(days = 30): Promise<PinterestMetric[]> {
-  if (USE_MOCK) return mockPinterestMetrics(days);
+export async function getPinterestMetrics(
+  range: DateRange = defaultRange(),
+): Promise<PinterestMetric[]> {
+  if (USE_MOCK) return mockPinterestMetrics(range);
   const supabase = await createClient();
-  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from('pinterest_metrics')
     .select('*')
-    .gte('date', since)
+    .gte('date', range.from)
+    .lte('date', range.to)
     .order('date', { ascending: true });
   if (error) throw error;
   return data ?? [];
 }
 
-export async function getMetaAds(days = 30): Promise<AdsMetric[]> {
-  if (USE_MOCK) return mockMetaAds(days);
+export async function getMetaAds(range: DateRange = defaultRange()): Promise<AdsMetric[]> {
+  if (USE_MOCK) return mockMetaAds(range);
   const supabase = await createClient();
-  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from('meta_ads_metrics')
     .select('*')
-    .gte('date', since)
+    .gte('date', range.from)
+    .lte('date', range.to)
     .order('date', { ascending: true });
   if (error) throw error;
   return data ?? [];
 }
 
-export async function getGoogleAds(days = 30): Promise<AdsMetric[]> {
-  if (USE_MOCK) return mockGoogleAds(days);
+export async function getGoogleAds(range: DateRange = defaultRange()): Promise<AdsMetric[]> {
+  if (USE_MOCK) return mockGoogleAds(range);
   const supabase = await createClient();
-  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from('google_ads_metrics')
     .select('*')
-    .gte('date', since)
+    .gte('date', range.from)
+    .lte('date', range.to)
     .order('date', { ascending: true });
   if (error) throw error;
   return data ?? [];

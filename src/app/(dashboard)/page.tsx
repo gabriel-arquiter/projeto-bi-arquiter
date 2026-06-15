@@ -2,6 +2,7 @@ import { KpiCard } from '@/components/ui/kpi-card';
 import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
 import { getMonthlyOverview, getGa4Daily } from '@/lib/queries';
+import { resolvePeriod, type PageSearchParams } from '@/lib/period';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,10 +17,15 @@ function brl(n: number) {
   }).format(n);
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: PageSearchParams;
+}) {
+  const period = resolvePeriod(searchParams);
   const [overview, ga4] = await Promise.all([
     getMonthlyOverview().catch(() => []),
-    getGa4Daily(30).catch(() => []),
+    getGa4Daily(period.range).catch(() => []),
   ]);
 
   const last = overview.at(-1);
@@ -48,7 +54,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <span className="period-chip">
-          <span className="dot" /> Últimos 30 dias
+          <span className="dot" /> {period.label}
         </span>
       </header>
 
@@ -85,7 +91,7 @@ export default async function DashboardPage() {
 
       <div className="section-title">
         <h2>Tráfego diário</h2>
-        <span className="hint">GA4 · últimos 30 dias</span>
+        <span className="hint">GA4 · {period.label}</span>
       </div>
       <TrendChart
         data={ga4 as unknown as Array<Record<string, string | number>>}

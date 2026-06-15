@@ -19,6 +19,7 @@ import type {
   PipelineNurturing,
   ProjectionPoint,
 } from '@/types/database';
+import { addDays, defaultRange, type DateRange } from '@/lib/period';
 
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -41,18 +42,49 @@ function daysAgo(n: number) {
   return d;
 }
 
-// Curva suave com leve sazonalidade semanal + ruído determinístico.
-function wave(
-  i: number,
-  base: number,
-  amp: number,
-  rand: () => number,
-  weeklyBoost = 0.15,
-) {
-  const weekly = Math.sin((i / 7) * Math.PI * 2) * weeklyBoost;
-  const trend = Math.sin((i / 30) * Math.PI) * 0.2;
-  const noise = (rand() - 0.5) * 0.18;
+const HORIZON = 120; // dias de história usados na curva de tendência
+
+// Offset em dias entre a data e hoje (0 = hoje, positivo = passado).
+function dayOffset(iso: string): number {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const d = new Date(`${iso}T00:00:00Z`);
+  return Math.round((today.getTime() - d.getTime()) / 86_400_000);
+}
+
+// PRNG determinístico por (seed, data): a mesma data sempre gera os mesmos números.
+// Isso mantém o período atual e o período comparado estáveis e coerentes entre si —
+// datas mais antigas ficam no passado da curva, então a comparação mostra deltas reais.
+function dateRng(seed: number, iso: string) {
+  return rng((((seed * 100003) >>> 0) ^ (dayOffset(iso) + 1)) >>> 0);
+}
+
+// Curva por data: tendência de alta para datas mais recentes + sazonalidade semanal.
+function dayWave(iso: string, base: number, amp: number, rand: () => number, weeklyBoost = 0.15) {
+  const off = dayOffset(iso);
+  const recency = Math.max(0, HORIZON - Math.min(HORIZON, off)); // 0..HORIZON (maior = mais recente)
+  const weekly = Math.sin((off / 7) * Math.PI * 2) * weeklyBoost;
+  const trend = recency * 0.0032;
+  const noise = (rand() - 0.5) * 0.16;
   return Math.max(0, base * (1 + weekly + trend + noise) + amp * (rand() - 0.5));
+}
+
+// Lista de datas ISO (inclusivas) entre range.from e range.to.
+function eachDay(range: DateRange): string[] {
+  const out: string[] = [];
+  let cur = range.from;
+  while (cur <= range.to) {
+    out.push(cur);
+    cur = addDays(cur, 1);
+  }
+  return out;
+}
+
+// Hash simples para variar a seed por campanha.
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
 }
 
 // ───────────────────────────── Monthly overview ─────────────────────────────
@@ -82,17 +114,16 @@ export function mockMonthlyOverview(): MonthlyOverview[] {
 }
 
 // ───────────────────────────── GA4 diário ─────────────────────────────
-export function mockGa4Daily(days = 30): Ga4Metric[] {
-  const rand = rng(202);
-  const out: Ga4Metric[] = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const sessions = Math.round(wave(days - i, 720, 90, rand, 0.22));
+export function mockGa4Daily(range: DateRange = defaultRange()): Ga4Metric[] {
+  return eachDay(range).map((date) => {
+    const rand = dateRng(202, date);
+    const sessions = Math.round(dayWave(date, 720, 90, rand, 0.22));
     const users = Math.round(sessions * (0.7 + rand() * 0.05));
     const organic = Math.round(sessions * (0.46 + rand() * 0.06));
     const paid = Math.round(sessions * (0.34 + rand() * 0.06));
     const social = Math.round(sessions * (0.12 + rand() * 0.04));
-    out.push({
-      date: isoDate(daysAgo(i)),
+    return {
+      date,
       sessions,
       users,
       bounce_rate: 0.41 + (rand() - 0.5) * 0.06,
@@ -100,27 +131,24 @@ export function mockGa4Daily(days = 30): Ga4Metric[] {
       organic_sessions: organic,
       paid_sessions: paid,
       social_sessions: social,
-    });
-  }
-  return out;
+    };
+  });
 }
 
 // ───────────────────────────── Search Console ─────────────────────────────
-export function mockSearchConsoleDaily(days = 30): SearchConsoleMetric[] {
-  const rand = rng(303);
-  const out: SearchConsoleMetric[] = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const impressions = Math.round(wave(days - i, 8_200, 700, rand, 0.18));
+export function mockSearchConsoleDaily(range: DateRange = defaultRange()): SearchConsoleMetric[] {
+  return eachDay(range).map((date) => {
+    const rand = dateRng(303, date);
+    const impressions = Math.round(dayWave(date, 8_200, 700, rand, 0.18));
     const ctr = 0.034 + (rand() - 0.5) * 0.012;
-    out.push({
-      date: isoDate(daysAgo(i)),
+    return {
+      date,
       clicks: Math.round(impressions * ctr),
       impressions,
       ctr,
       avg_position: 12.4 + (rand() - 0.5) * 2.6,
-    });
-  }
-  return out;
+    };
+  });
 }
 
 export function mockTopKeywords(limit = 10): SearchConsoleKeyword[] {
@@ -154,20 +182,18 @@ export function mockTopKeywords(limit = 10): SearchConsoleKeyword[] {
 }
 
 // ───────────────────────────── Instagram ─────────────────────────────
-export function mockInstagramMetrics(days = 30): InstagramMetric[] {
-  const rand = rng(505);
+export function mockInstagramMetrics(range: DateRange = defaultRange()): InstagramMetric[] {
   const baseFollowers = 14_320;
-  const out: InstagramMetric[] = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const dayIdx = days - i;
-    out.push({
-      date: isoDate(daysAgo(i)),
-      followers: baseFollowers + dayIdx * 12 + Math.round(rand() * 8),
-      reach: Math.round(wave(dayIdx, 4_200, 600, rand, 0.28)),
+  return eachDay(range).map((date) => {
+    const rand = dateRng(505, date);
+    const recency = Math.max(0, HORIZON - Math.min(HORIZON, dayOffset(date)));
+    return {
+      date,
+      followers: baseFollowers + recency * 12 + Math.round(rand() * 8),
+      reach: Math.round(dayWave(date, 4_200, 600, rand, 0.28)),
       engagement_rate: 0.054 + (rand() - 0.5) * 0.018,
-    });
-  }
-  return out;
+    };
+  });
 }
 
 export function mockTopInstagramPosts(limit = 6): InstagramPost[] {
@@ -190,20 +216,17 @@ export function mockTopInstagramPosts(limit = 6): InstagramPost[] {
 }
 
 // ───────────────────────────── Pinterest ─────────────────────────────
-export function mockPinterestMetrics(days = 30): PinterestMetric[] {
-  const rand = rng(707);
-  const out: PinterestMetric[] = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const dayIdx = days - i;
-    const impressions = Math.round(wave(dayIdx, 2_400, 320, rand, 0.2));
-    out.push({
-      date: isoDate(daysAgo(i)),
+export function mockPinterestMetrics(range: DateRange = defaultRange()): PinterestMetric[] {
+  return eachDay(range).map((date) => {
+    const rand = dateRng(707, date);
+    const impressions = Math.round(dayWave(date, 2_400, 320, rand, 0.2));
+    return {
+      date,
       impressions,
       saves: Math.round(impressions * (0.022 + rand() * 0.014)),
       outbound_clicks: Math.round(impressions * (0.011 + rand() * 0.006)),
-    });
-  }
-  return out;
+    };
+  });
 }
 
 // ───────────────────────────── Ads ─────────────────────────────
@@ -218,19 +241,18 @@ const googleCampaigns = [
   'Search — Brand',
 ];
 
-function mockAds(seed: number, days: number, campaigns: string[], cpl: number): AdsMetric[] {
-  const rand = rng(seed);
+function mockAds(seed: number, range: DateRange, campaigns: string[], cpl: number): AdsMetric[] {
   const out: AdsMetric[] = [];
-  for (let i = days - 1; i >= 0; i--) {
-    const day = isoDate(daysAgo(i));
+  for (const date of eachDay(range)) {
     for (const campaign of campaigns) {
-      const spend = wave(days - i, 220, 60, rand, 0.18) * (0.7 + rand() * 0.7);
+      const rand = dateRng(seed + hashStr(campaign), date);
+      const spend = dayWave(date, 220, 60, rand, 0.18) * (0.7 + rand() * 0.7);
       const leadsRaw = spend / (cpl * (0.85 + rand() * 0.3));
       const leads = Math.max(0, Math.round(leadsRaw));
       const clicks = Math.round(leads / (0.06 + rand() * 0.04));
       const impressions = Math.round(clicks / (0.018 + rand() * 0.012));
       out.push({
-        date: day,
+        date,
         campaign,
         spend,
         impressions,
@@ -244,11 +266,11 @@ function mockAds(seed: number, days: number, campaigns: string[], cpl: number): 
   return out;
 }
 
-export function mockMetaAds(days = 30): AdsMetric[] {
-  return mockAds(808, days, metaCampaigns, 38);
+export function mockMetaAds(range: DateRange = defaultRange()): AdsMetric[] {
+  return mockAds(808, range, metaCampaigns, 38);
 }
-export function mockGoogleAds(days = 30): AdsMetric[] {
-  return mockAds(909, days, googleCampaigns, 44);
+export function mockGoogleAds(range: DateRange = defaultRange()): AdsMetric[] {
+  return mockAds(909, range, googleCampaigns, 44);
 }
 
 // ───────────────────────────── Financeiro (Conta Azul) ─────────────────────────────

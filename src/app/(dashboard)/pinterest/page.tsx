@@ -2,17 +2,28 @@ import { KpiCard } from '@/components/ui/kpi-card';
 import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
 import { getPinterestMetrics } from '@/lib/queries';
+import { resolvePeriod, type PageSearchParams } from '@/lib/period';
 
 export const dynamic = 'force-dynamic';
 const fmt = (n: number) => new Intl.NumberFormat('pt-BR').format(Math.round(n));
+const pct = (cur: number, prev: number) => (prev ? ((cur - prev) / prev) * 100 : undefined);
 
-export default async function PinterestPage() {
-  const pin = await getPinterestMetrics(30).catch(() => []);
+export default async function PinterestPage({
+  searchParams,
+}: {
+  searchParams: PageSearchParams;
+}) {
+  const period = resolvePeriod(searchParams);
+  const [pin, pinPrev] = await Promise.all([
+    getPinterestMetrics(period.range).catch(() => []),
+    period.compare ? getPinterestMetrics(period.prevRange).catch(() => []) : Promise.resolve([]),
+  ]);
   const last = pin.at(-1);
   const sparkImpr = pin.slice(-14).map((d) => d.impressions);
   const sparkSaves = pin.slice(-14).map((d) => d.saves);
   const sparkClicks = pin.slice(-14).map((d) => d.outbound_clicks);
   const totalImpr = pin.reduce((s, d) => s + (d.impressions ?? 0), 0);
+  const prevTotalImpr = pinPrev.reduce((s, d) => s + (d.impressions ?? 0), 0);
 
   return (
     <div>
@@ -25,7 +36,8 @@ export default async function PinterestPage() {
           </p>
         </div>
         <span className="period-chip">
-          <span className="dot" /> Últimos 30 dias
+          <span className="dot" /> {period.label}
+          {period.compare && ' · comparado'}
         </span>
       </header>
 
@@ -49,8 +61,9 @@ export default async function PinterestPage() {
           icon={KpiIcons.sessions}
         />
         <KpiCard
-          label="Impressões 30d"
+          label={`Impressões ${period.days}d`}
           value={fmt(totalImpr)}
+          delta={period.compare ? pct(totalImpr, prevTotalImpr) : undefined}
           hint="acumulado"
           icon={KpiIcons.leads}
         />
@@ -58,7 +71,7 @@ export default async function PinterestPage() {
 
       <div className="section-title">
         <h2>Tendência</h2>
-        <span className="hint">Impressões e saves · 30d</span>
+        <span className="hint">Impressões e saves · {period.days}d</span>
       </div>
       <TrendChart
         data={pin as unknown as Array<Record<string, string | number>>}
