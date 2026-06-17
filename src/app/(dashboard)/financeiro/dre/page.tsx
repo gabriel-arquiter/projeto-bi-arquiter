@@ -75,9 +75,6 @@ export default async function DrePage({ searchParams }: { searchParams: PageSear
             reconciliados com o ERP.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {period.label}
-        </span>
       </header>
 
       <section className="kpi-grid">

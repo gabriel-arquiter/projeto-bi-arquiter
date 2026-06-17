@@ -67,10 +67,6 @@ export default async function MetaAdsPage({ searchParams }: { searchParams: Page
             Facebook e Instagram Ads — investimento, leads e retorno.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {period.label}
-          {period.compare && ' · comparado'}
-        </span>
       </header>
 
       <section className="kpi-grid">

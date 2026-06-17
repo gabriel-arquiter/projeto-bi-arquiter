@@ -38,10 +38,6 @@ export default async function GscPage({ searchParams }: { searchParams: PageSear
             Performance orgânica nas buscas — cliques, impressões, CTR e posição.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {period.label}
-          {period.compare && ' · comparado'}
-        </span>
       </header>
 
       <section className="kpi-grid">

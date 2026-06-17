@@ -53,9 +53,6 @@ export default async function DashboardPage({
             Tráfego, mídia paga e conversão consolidados — comparação com o mês anterior.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {period.label}
-        </span>
       </header>
 
       <section className="kpi-grid">

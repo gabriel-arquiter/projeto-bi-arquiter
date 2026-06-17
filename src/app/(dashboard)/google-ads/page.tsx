@@ -67,10 +67,6 @@ export default async function GoogleAdsPage({ searchParams }: { searchParams: Pa
             Search e Performance Max — investimento, leads e retorno.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {period.label}
-          {period.compare && ' · comparado'}
-        </span>
       </header>
 
       <section className="kpi-grid">

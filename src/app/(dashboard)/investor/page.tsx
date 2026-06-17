@@ -200,9 +200,6 @@ export default async function InvestorViewPage({
             Visão executiva consolidada · Atualizado em tempo real
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {period.label}
-        </span>
       </header>
 
       {/* ── Bloco 1 — Growth Metrics ── */}

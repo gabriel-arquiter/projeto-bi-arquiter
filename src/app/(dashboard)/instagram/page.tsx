@@ -35,10 +35,6 @@ export default async function InstagramPage({
           <h1>Instagram</h1>
           <p className="subtitle">Alcance, seguidores, engajamento e melhores posts.</p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {period.label}
-          {period.compare && ' · comparado'}
-        </span>
       </header>
 
       <section className="kpi-grid">

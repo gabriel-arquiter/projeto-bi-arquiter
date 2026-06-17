@@ -35,10 +35,6 @@ export default async function PinterestPage({
             Impressões, saves e cliques de saída — orgânico do Pinterest.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {period.label}
-          {period.compare && ' · comparado'}
-        </span>
       </header>
 
       <section className="kpi-grid">

@@ -61,9 +61,6 @@ export default async function CashFlowPage({
             contas a pagar/receber.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {period.label}
-        </span>
       </header>
 
       <section className="kpi-grid">

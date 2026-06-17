@@ -59,12 +59,7 @@ export default async function FinanceForecastPage({
             com intervalo de confiança, nunca um ponto único.
           </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span className="period-chip">
-            <span className="dot" /> {period.label}
-          </span>
-          <span className="badge gold">BASELINE</span>
-        </div>
+        <span className="badge gold">BASELINE</span>
       </header>
 
       <section className="kpi-grid">
