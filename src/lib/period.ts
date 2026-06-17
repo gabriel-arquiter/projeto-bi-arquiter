@@ -22,6 +22,26 @@ export type PageSearchParams = Record<string, string | string[] | undefined>;
 export const PRESETS = [7, 15, 30, 90] as const;
 export const DEFAULT_DAYS = 30;
 
+// Rotas onde o seletor de período aparece (na topbar desktop e na topbar mobile).
+// Diárias filtram por dias; Financeiro recorta por mês; CRM são snapshots
+// (seletor aparece por consistência, sem alterar os números).
+export const PERIOD_ROUTES: ReadonlySet<string> = new Set([
+  '/',
+  '/investor',
+  '/instagram',
+  '/pinterest',
+  '/ga',
+  '/gsc',
+  '/meta-ads',
+  '/google-ads',
+  '/financeiro/dre',
+  '/financeiro/cash-flow',
+  '/financeiro/forecast',
+  '/crm/funis',
+  '/crm/segmentacao',
+  '/crm/atribuicao',
+]);
+
 export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }

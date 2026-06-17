@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { NavIcons } from '@/components/ui/nav-icons';
+import { PeriodSelector } from '@/components/ui/period-selector';
+import { PERIOD_ROUTES } from '@/lib/period';
 
 type Item = {
   href: string;
@@ -157,7 +159,13 @@ export function Nav({ userEmail }: { userEmail: string }) {
             {currentLabel}
           </span>
         </div>
-        <span style={{ width: 40 }} aria-hidden />
+        {PERIOD_ROUTES.has(pathname) ? (
+          <Suspense fallback={<span style={{ width: 40 }} aria-hidden />}>
+            <PeriodSelector />
+          </Suspense>
+        ) : (
+          <span style={{ width: 40 }} aria-hidden />
+        )}
       </header>
 
       {/* Overlay do drawer */}
