@@ -2,6 +2,7 @@ import { KpiCard } from '@/components/ui/kpi-card';
 import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
 import { getCashFlow } from '@/lib/queries';
+import { resolvePeriod, type PageSearchParams } from '@/lib/period';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,8 +23,13 @@ function monthLabel(iso: string) {
   return d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
 }
 
-export default async function CashFlowPage() {
-  const cf = await getCashFlow(6).catch(() => []);
+export default async function CashFlowPage({
+  searchParams,
+}: {
+  searchParams: PageSearchParams;
+}) {
+  const period = resolvePeriod(searchParams);
+  const cf = await getCashFlow(period.range).catch(() => []);
   const last = cf.at(-1);
   const prev = cf.at(-2);
 
@@ -44,10 +50,6 @@ export default async function CashFlowPage() {
     saldo: m.saldo_final,
   }));
 
-  const monthName = last
-    ? new Date(last.month).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-    : '—';
-
   return (
     <div>
       <header className="page-header">
@@ -59,9 +61,6 @@ export default async function CashFlowPage() {
             contas a pagar/receber.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {monthName}
-        </span>
       </header>
 
       <section className="kpi-grid">
@@ -95,7 +94,7 @@ export default async function CashFlowPage() {
 
       <div className="section-title">
         <h2>Movimentação de caixa</h2>
-        <span className="hint">Entradas · saídas · saldo · 6m</span>
+        <span className="hint">Entradas · saídas · saldo · {cf.length}m</span>
       </div>
       <TrendChart
         data={series}

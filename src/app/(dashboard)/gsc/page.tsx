@@ -2,18 +2,24 @@ import { KpiCard } from '@/components/ui/kpi-card';
 import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
 import { getSearchConsoleDaily, getTopKeywords } from '@/lib/queries';
+import { resolvePeriod, type PageSearchParams } from '@/lib/period';
 
 export const dynamic = 'force-dynamic';
 const fmt = (n: number) => new Intl.NumberFormat('pt-BR').format(Math.round(n));
+const pct = (cur: number, prev: number) => (prev ? ((cur - prev) / prev) * 100 : undefined);
 
-export default async function GscPage() {
-  const [sc, kw] = await Promise.all([
-    getSearchConsoleDaily(30).catch(() => []),
+export default async function GscPage({ searchParams }: { searchParams: PageSearchParams }) {
+  const period = resolvePeriod(searchParams);
+  const [sc, scPrev, kw] = await Promise.all([
+    getSearchConsoleDaily(period.range).catch(() => []),
+    period.compare ? getSearchConsoleDaily(period.prevRange).catch(() => []) : Promise.resolve([]),
     getTopKeywords(10).catch(() => []),
   ]);
 
   const totalClicks = sc.reduce((s, d) => s + (d.clicks ?? 0), 0);
   const totalImpr = sc.reduce((s, d) => s + (d.impressions ?? 0), 0);
+  const prevClicks = scPrev.reduce((s, d) => s + (d.clicks ?? 0), 0);
+  const prevImpr = scPrev.reduce((s, d) => s + (d.impressions ?? 0), 0);
   const avgPos = sc.length
     ? sc.reduce((s, d) => s + (d.avg_position ?? 0), 0) / sc.length
     : 0;
@@ -32,21 +38,20 @@ export default async function GscPage() {
             Performance orgânica nas buscas — cliques, impressões, CTR e posição.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> Últimos 30 dias
-        </span>
       </header>
 
       <section className="kpi-grid">
         <KpiCard
           label="Cliques orgânicos"
           value={fmt(totalClicks)}
+          delta={period.compare ? pct(totalClicks, prevClicks) : undefined}
           spark={sparkClicks}
           icon={KpiIcons.sessions}
         />
         <KpiCard
           label="Impressões"
           value={fmt(totalImpr)}
+          delta={period.compare ? pct(totalImpr, prevImpr) : undefined}
           spark={sparkImpr}
           icon={KpiIcons.reach}
         />
@@ -65,7 +70,7 @@ export default async function GscPage() {
 
       <div className="section-title">
         <h2>Search Console diário</h2>
-        <span className="hint">30 dias</span>
+        <span className="hint">{period.days} dias</span>
       </div>
       <TrendChart
         data={sc as unknown as Array<Record<string, string | number>>}

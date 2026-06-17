@@ -2,14 +2,23 @@ import { KpiCard } from '@/components/ui/kpi-card';
 import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
 import { getGa4Daily } from '@/lib/queries';
+import { resolvePeriod, type PageSearchParams } from '@/lib/period';
 
 export const dynamic = 'force-dynamic';
 const fmt = (n: number) => new Intl.NumberFormat('pt-BR').format(Math.round(n));
+const pct = (cur: number, prev: number) => (prev ? ((cur - prev) / prev) * 100 : undefined);
 
-export default async function GaPage() {
-  const ga4 = await getGa4Daily(30).catch(() => []);
+export default async function GaPage({ searchParams }: { searchParams: PageSearchParams }) {
+  const period = resolvePeriod(searchParams);
+  const [ga4, ga4Prev] = await Promise.all([
+    getGa4Daily(period.range).catch(() => []),
+    period.compare ? getGa4Daily(period.prevRange).catch(() => []) : Promise.resolve([]),
+  ]);
+
   const totalSessions = ga4.reduce((s, d) => s + (d.sessions ?? 0), 0);
   const totalUsers = ga4.reduce((s, d) => s + (d.users ?? 0), 0);
+  const prevSessions = ga4Prev.reduce((s, d) => s + (d.sessions ?? 0), 0);
+  const prevUsers = ga4Prev.reduce((s, d) => s + (d.users ?? 0), 0);
   const lastGa4 = ga4.at(-1);
   const sparkSessions = ga4.slice(-14).map((d) => d.sessions);
   const sparkUsers = ga4.slice(-14).map((d) => d.users);
@@ -27,21 +36,20 @@ export default async function GaPage() {
             Tráfego do site, comportamento e canais de aquisição (GA4).
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> Últimos 30 dias
-        </span>
       </header>
 
       <section className="kpi-grid">
         <KpiCard
           label="Sessões"
           value={fmt(totalSessions)}
+          delta={period.compare ? pct(totalSessions, prevSessions) : undefined}
           spark={sparkSessions}
           icon={KpiIcons.sessions}
         />
         <KpiCard
           label="Usuários"
           value={fmt(totalUsers)}
+          delta={period.compare ? pct(totalUsers, prevUsers) : undefined}
           spark={sparkUsers}
           icon={KpiIcons.users}
         />
@@ -61,7 +69,7 @@ export default async function GaPage() {
 
       <div className="section-title">
         <h2>Canais de aquisição</h2>
-        <span className="hint">GA4 · 30 dias</span>
+        <span className="hint">GA4 · {period.days} dias</span>
       </div>
       <TrendChart
         data={ga4 as unknown as Array<Record<string, string | number>>}

@@ -2,6 +2,7 @@ import { KpiCard } from '@/components/ui/kpi-card';
 import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
 import { getDre } from '@/lib/queries';
+import { resolvePeriod, type PageSearchParams } from '@/lib/period';
 import type { DreMonth } from '@/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -40,8 +41,9 @@ function dreLines(m: DreMonth) {
   ];
 }
 
-export default async function DrePage() {
-  const dre = await getDre(6).catch(() => []);
+export default async function DrePage({ searchParams }: { searchParams: PageSearchParams }) {
+  const period = resolvePeriod(searchParams);
+  const dre = await getDre(period.range).catch(() => []);
   const last = dre.at(-1);
   const prev = dre.at(-2);
 
@@ -62,10 +64,6 @@ export default async function DrePage() {
     resultado: m.resultado_liquido,
   }));
 
-  const monthName = last
-    ? new Date(last.month).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-    : '—';
-
   return (
     <div>
       <header className="page-header">
@@ -77,9 +75,6 @@ export default async function DrePage() {
             reconciliados com o ERP.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> {monthName}
-        </span>
       </header>
 
       <section className="kpi-grid">
@@ -115,7 +110,7 @@ export default async function DrePage() {
 
       <div className="section-title">
         <h2>Evolução do resultado</h2>
-        <span className="hint">Receita líquida · EBITDA · resultado · 6m</span>
+        <span className="hint">Receita líquida · EBITDA · resultado · {dre.length}m</span>
       </div>
       <TrendChart
         data={series}

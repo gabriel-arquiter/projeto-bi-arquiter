@@ -2,6 +2,7 @@ import { KpiCard } from '@/components/ui/kpi-card';
 import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
 import { getGoogleAds } from '@/lib/queries';
+import { resolvePeriod, type PageSearchParams } from '@/lib/period';
 import type { AdsMetric } from '@/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -12,6 +13,7 @@ const brl = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 const fmt = (n: number) => new Intl.NumberFormat('pt-BR').format(Math.round(n));
+const pct = (cur: number, prev: number) => (prev ? ((cur - prev) / prev) * 100 : undefined);
 
 function agg(rows: AdsMetric[]) {
   const spend = rows.reduce((s, r) => s + (r.spend ?? 0), 0);
@@ -43,9 +45,14 @@ function sparkBy(rows: AdsMetric[], key: 'leads' | 'spend', days = 14) {
     .map(([, v]) => v);
 }
 
-export default async function GoogleAdsPage() {
-  const google = await getGoogleAds(30).catch(() => []);
+export default async function GoogleAdsPage({ searchParams }: { searchParams: PageSearchParams }) {
+  const period = resolvePeriod(searchParams);
+  const [google, googlePrev] = await Promise.all([
+    getGoogleAds(period.range).catch(() => []),
+    period.compare ? getGoogleAds(period.prevRange).catch(() => []) : Promise.resolve([]),
+  ]);
   const g = agg(google);
+  const gPrev = agg(googlePrev);
   const series = byDay(google);
   const leadsSpark = sparkBy(google, 'leads');
   const spendSpark = sparkBy(google, 'spend');
@@ -60,35 +67,40 @@ export default async function GoogleAdsPage() {
             Search e Performance Max — investimento, leads e retorno.
           </p>
         </div>
-        <span className="period-chip">
-          <span className="dot" /> Últimos 30 dias
-        </span>
       </header>
 
       <section className="kpi-grid">
         <KpiCard
           label="Investimento"
           value={brl(g.spend)}
+          delta={period.compare ? pct(g.spend, gPrev.spend) : undefined}
           spark={spendSpark}
           icon={KpiIcons.money}
         />
         <KpiCard
           label="Leads"
           value={fmt(g.leads)}
+          delta={period.compare ? pct(g.leads, gPrev.leads) : undefined}
           spark={leadsSpark}
           icon={KpiIcons.leads}
         />
-        <KpiCard label="CPL" value={brl(g.cpl)} icon={KpiIcons.cac} />
+        <KpiCard
+          label="CPL"
+          value={brl(g.cpl)}
+          delta={period.compare ? pct(gPrev.cpl, g.cpl) : undefined}
+          icon={KpiIcons.cac}
+        />
         <KpiCard
           label="ROAS médio"
           value={`${g.roas.toFixed(2)}x`}
+          delta={period.compare ? pct(g.roas, gPrev.roas) : undefined}
           icon={KpiIcons.roas}
         />
       </section>
 
       <div className="section-title">
         <h2>Evolução diária</h2>
-        <span className="hint">Leads × spend · 30d</span>
+        <span className="hint">Leads × spend · {period.days}d</span>
       </div>
       <TrendChart
         data={series as unknown as Array<Record<string, string | number>>}

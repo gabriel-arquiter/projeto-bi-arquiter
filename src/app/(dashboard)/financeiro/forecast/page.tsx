@@ -2,6 +2,7 @@ import { KpiCard } from '@/components/ui/kpi-card';
 import { KpiIcons } from '@/components/ui/kpi-icons';
 import { TrendChart } from '@/components/charts/trend-chart';
 import { getFinanceForecast } from '@/lib/queries';
+import { resolvePeriod, type PageSearchParams } from '@/lib/period';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,8 +18,13 @@ function monthLabel(iso: string) {
   return d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
 }
 
-export default async function FinanceForecastPage() {
-  const fc = await getFinanceForecast(6).catch(() => []);
+export default async function FinanceForecastPage({
+  searchParams,
+}: {
+  searchParams: PageSearchParams;
+}) {
+  const period = resolvePeriod(searchParams);
+  const fc = await getFinanceForecast(period.range).catch(() => []);
   const real = fc.filter((m) => m.tipo === 'real');
   const previsto = fc.filter((m) => m.tipo === 'previsto');
 
