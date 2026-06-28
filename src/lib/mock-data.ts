@@ -35,13 +35,6 @@ function rng(seed: number) {
   };
 }
 
-function daysAgo(n: number) {
-  const d = new Date();
-  d.setUTCHours(0, 0, 0, 0);
-  d.setUTCDate(d.getUTCDate() - n);
-  return d;
-}
-
 const HORIZON = 120; // dias de história usados na curva de tendência
 
 // Offset em dias entre a data e hoje (0 = hoje, positivo = passado).
@@ -187,32 +180,47 @@ export function mockInstagramMetrics(range: DateRange = defaultRange()): Instagr
   return eachDay(range).map((date) => {
     const rand = dateRng(505, date);
     const recency = Math.max(0, HORIZON - Math.min(HORIZON, dayOffset(date)));
+    const reach = Math.round(dayWave(date, 4_200, 600, rand, 0.28));
+    const engagement_rate = 0.054 + (rand() - 0.5) * 0.018;
     return {
       date,
       followers: baseFollowers + recency * 12 + Math.round(rand() * 8),
-      reach: Math.round(dayWave(date, 4_200, 600, rand, 0.28)),
-      engagement_rate: 0.054 + (rand() - 0.5) * 0.018,
+      reach,
+      impressions: Math.round(reach * (1.15 + rand() * 0.25)),
+      views: Math.round(reach * (1.3 + rand() * 0.3)),
+      total_interactions: Math.round(reach * engagement_rate),
+      profile_views: Math.round(reach * (0.04 + rand() * 0.02)),
+      engagement_rate,
     };
   });
 }
 
-export function mockTopInstagramPosts(limit = 6): InstagramPost[] {
-  const rand = rng(606);
-  const types = ['Reel', 'Carrossel', 'Foto', 'Reel', 'Carrossel', 'Foto'];
-  return types.slice(0, limit).map((t, i) => {
-    const reach = Math.round(7_400 / (i * 0.18 + 1) * (0.85 + rand() * 0.3));
-    const likes = Math.round(reach * (0.07 + rand() * 0.03));
-    const saves = Math.round(likes * (0.18 + rand() * 0.08));
-    return {
-      id: `ig-post-${i + 1}`,
-      posted_at: isoDate(daysAgo(i * 3 + 1)),
+export function mockInstagramPosts(range: DateRange = defaultRange()): InstagramPost[] {
+  const days = eachDay(range);
+  const types = ['REELS', 'CAROUSEL_ALBUM', 'IMAGE'];
+  const out: InstagramPost[] = [];
+  // ~1 post a cada 3 dias
+  for (let i = 0; i < days.length; i += 3) {
+    const date = days[i];
+    const rand = dateRng(606, date);
+    const reach = Math.round(dayWave(date, 5_200, 800, rand, 0.3));
+    const likes = Math.round(reach * (0.06 + rand() * 0.04));
+    const comments = Math.round(likes * (0.05 + rand() * 0.05));
+    const saves = Math.round(likes * (0.15 + rand() * 0.1));
+    out.push({
+      post_id: `mock-${date}`,
+      published_at: `${date}T12:00:00+00:00`,
+      caption: 'Post de exemplo Arquiter',
+      media_type: types[(i / 3) % types.length],
+      permalink: null,
       reach,
       likes,
+      comments,
       saves,
-      engagement_rate: (likes + saves) / Math.max(1, reach),
-      media_type: t,
-    };
-  });
+      engagement_rate: reach ? (likes + comments + saves) / reach : 0,
+    });
+  }
+  return out.sort((a, b) => (b.engagement_rate ?? 0) - (a.engagement_rate ?? 0));
 }
 
 // ───────────────────────────── Pinterest ─────────────────────────────

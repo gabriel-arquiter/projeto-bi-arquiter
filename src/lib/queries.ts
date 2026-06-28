@@ -24,7 +24,7 @@ import {
   mockSearchConsoleDaily,
   mockTopKeywords,
   mockInstagramMetrics,
-  mockTopInstagramPosts,
+  mockInstagramPosts,
   mockPinterestMetrics,
   mockMetaAds,
   mockGoogleAds,
@@ -110,12 +110,17 @@ export async function getInstagramMetrics(
   return data ?? [];
 }
 
-export async function getTopInstagramPosts(limit = 6): Promise<InstagramPost[]> {
-  if (USE_MOCK) return mockTopInstagramPosts(limit);
+export async function getInstagramPosts(
+  range: DateRange = defaultRange(),
+  limit = 100,
+): Promise<InstagramPost[]> {
+  if (USE_MOCK) return mockInstagramPosts(range);
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('instagram_posts')
     .select('*')
+    .gte('published_at', range.from)
+    .lte('published_at', `${range.to}T23:59:59`)
     .order('engagement_rate', { ascending: false })
     .limit(limit);
   if (error) throw error;
