@@ -39,7 +39,6 @@ export default async function InstagramPage({
   // Alcance e views totais no período
   const reachTotal = sum(ig.map((d) => d.reach ?? 0));
   const reachPrev = sum(igPrev.map((d) => d.reach ?? 0));
-  const viewsTotal = sum(ig.map((d) => d.views ?? 0));
 
   // Engajamento médio: interações/alcance (cai pra média dos posts se faltar métrica)
   const interactionsTotal = sum(ig.map((d) => d.total_interactions ?? 0));
@@ -61,7 +60,6 @@ export default async function InstagramPage({
   const series = ig.map((d) => ({
     date: d.date,
     reach: d.reach ?? 0,
-    views: d.views ?? 0,
     followers: d.followers ?? 0,
   }));
 
@@ -137,34 +135,25 @@ export default async function InstagramPage({
       />
 
       <div className="section-title">
-        <h2>Alcance × Views</h2>
-        <span className="hint">Contas alcançadas e visualizações · {period.days}d</span>
+        <h2>Alcance diário</h2>
+        <span className="hint">Contas alcançadas · {period.days}d</span>
       </div>
       <TrendChart
         data={series}
         xKey="date"
-        title="Alcance e views"
+        title="Alcance"
         subtitle="Tendência diária"
-        lines={[
-          { key: 'reach', label: 'Alcance', color: '#ead32d' },
-          { key: 'views', label: 'Views', color: '#4a90d9' },
-        ]}
+        lines={[{ key: 'reach', label: 'Alcance', color: '#ead32d' }]}
       />
 
       <div className="section-title">
         <h2>Interações no período</h2>
         <span className="hint">Soma dos posts publicados</span>
       </div>
-      <section className="kpi-grid">
+      <section className="kpi-grid-3">
         <KpiCard label="Curtidas" value={fmt(likesTotal)} icon={KpiIcons.heart} />
         <KpiCard label="Comentários" value={fmt(commentsTotal)} icon={KpiIcons.leads} />
         <KpiCard label="Salvamentos" value={fmt(savesTotal)} icon={KpiIcons.reach} />
-        <KpiCard
-          label="Views totais"
-          value={fmt(viewsTotal)}
-          hint="conteúdo"
-          icon={KpiIcons.sessions}
-        />
       </section>
 
       <div className="section-title">
