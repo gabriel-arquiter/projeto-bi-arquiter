@@ -48,17 +48,24 @@ export interface InstagramMetric {
   date: string;
   followers: number;
   reach: number;
-  engagement_rate: number;
+  impressions: number | null;
+  views: number | null;
+  total_interactions: number | null;
+  profile_views: number | null;
+  engagement_rate: number | null;
 }
 
 export interface InstagramPost {
-  id: string;
-  posted_at: string;
-  reach: number;
-  likes: number;
-  saves: number;
-  engagement_rate: number;
+  post_id: string;
+  published_at: string;
+  caption: string | null;
   media_type: string;
+  permalink: string | null;
+  reach: number | null;
+  likes: number | null;
+  comments: number | null;
+  saves: number | null;
+  engagement_rate: number | null;
 }
 
 export interface PinterestMetric {
