@@ -203,6 +203,10 @@ const MOCK_CAPTIONS = [
   'Cozinha integrada ou separada? Conta pra gente o que você prefere!',
 ];
 
+const MOCK_THUMB =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44'%3E%3Crect width='44' height='44' fill='%23222'/%3E%3Crect x='10' y='10' width='24' height='24' rx='4' fill='%23ead32d'/%3E%3C/svg%3E";
+const MOCK_HOURS = [9, 14, 19, 21, 12];
+
 export function mockInstagramPosts(range: DateRange = defaultRange()): InstagramPost[] {
   const days = eachDay(range);
   const types = ['REELS', 'CAROUSEL_ALBUM', 'IMAGE'];
@@ -216,12 +220,15 @@ export function mockInstagramPosts(range: DateRange = defaultRange()): Instagram
     const likes = Math.round(reach * (0.06 + rand() * 0.04));
     const comments = Math.round(likes * (0.05 + rand() * 0.05));
     const saves = Math.round(likes * (0.15 + rand() * 0.1));
+    const hour = String(MOCK_HOURS[idx % MOCK_HOURS.length]).padStart(2, '0');
     out.push({
       post_id: `mock-${date}`,
-      published_at: `${date}T12:00:00+00:00`,
+      published_at: `${date}T${hour}:00:00+00:00`,
       caption: MOCK_CAPTIONS[idx % MOCK_CAPTIONS.length],
       media_type: types[idx % types.length],
       permalink: 'https://instagram.com',
+      thumbnail_url: MOCK_THUMB,
+      media_url: null,
       reach,
       likes,
       comments,

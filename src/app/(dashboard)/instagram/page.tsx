@@ -71,6 +71,81 @@ function analyzeCaptions(posts: CaptionPost[]) {
   };
 }
 
+// Grid de cartões com grupos de buckets (rótulo · n · engajamento), destacando o melhor.
+function BucketGrid({ grupos }: { grupos: { titulo: string; buckets: CaptionBucket[] }[] }) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gap: 14,
+      }}
+    >
+      {grupos.map((grupo) => {
+        const best = grupo.buckets.reduce<CaptionBucket | undefined>(
+          (m, b) => (b.eng > (m?.eng ?? -1) ? b : m),
+          undefined,
+        );
+        return (
+          <div key={grupo.titulo} className="surface" style={{ padding: '16px 18px' }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: 'var(--text-muted)',
+                marginBottom: 14,
+              }}
+            >
+              {grupo.titulo}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+              {grupo.buckets.map((b) => {
+                const win = grupo.buckets.length > 1 && b === best;
+                return (
+                  <div
+                    key={b.rotulo}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline',
+                      gap: 8,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 12.5,
+                        color: win ? 'var(--color-secondary)' : 'var(--text)',
+                        fontWeight: win ? 600 : 400,
+                      }}
+                    >
+                      {b.rotulo}
+                      <span style={{ color: 'var(--text-subtle)', fontSize: 11, marginLeft: 6 }}>
+                        ({b.n})
+                      </span>
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 13,
+                        color: win ? 'var(--color-secondary)' : 'var(--text-muted)',
+                        fontWeight: win ? 700 : 500,
+                      }}
+                    >
+                      {b.eng.toFixed(1)}%
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default async function InstagramPage({
   searchParams,
 }: {
@@ -134,6 +209,37 @@ export default async function InstagramPage({
 
   const topPosts = posts.slice(0, 6);
   const legendas = analyzeCaptions(posts);
+
+  // Qualidade do conteúdo: taxas por alcance dos posts
+  const postsReach = sum(posts.map((p) => p.reach ?? 0));
+  const saveRate = postsReach ? (savesTotal / postsReach) * 100 : 0;
+  const commentRate = postsReach ? (commentsTotal / postsReach) * 100 : 0;
+  const reachPerPost = posts.length ? postsReach / posts.length : 0;
+
+  // Melhor dia/horário pra postar (horário de Brasília, UTC-3)
+  const brt = (iso: string) => new Date(new Date(iso).getTime() - 3 * 3600 * 1000);
+  const engOf = (p: (typeof posts)[number]) => (p.engagement_rate ?? 0) * 100;
+  const avgEngOf = (ps: typeof posts) =>
+    ps.length ? sum(ps.map(engOf)) / ps.length : 0;
+  const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const porDia = WEEKDAYS.map((rotulo, i) => {
+    const ps = posts.filter((p) => brt(p.published_at).getUTCDay() === i);
+    return { rotulo, n: ps.length, eng: avgEngOf(ps) };
+  }).filter((d) => d.n > 0);
+  const PERIODOS = [
+    { rotulo: 'Manhã (6–12h)', test: (h: number) => h >= 6 && h < 12 },
+    { rotulo: 'Tarde (12–18h)', test: (h: number) => h >= 12 && h < 18 },
+    { rotulo: 'Noite (18–24h)', test: (h: number) => h >= 18 },
+    { rotulo: 'Madrugada (0–6h)', test: (h: number) => h < 6 },
+  ];
+  const porHorario = PERIODOS.map((per) => {
+    const ps = posts.filter((p) => per.test(brt(p.published_at).getUTCHours()));
+    return { rotulo: per.rotulo, n: ps.length, eng: avgEngOf(ps) };
+  }).filter((d) => d.n > 0);
+  const horarioGrupos = [
+    { titulo: 'Por dia da semana', buckets: porDia },
+    { titulo: 'Por período do dia', buckets: porHorario },
+  ].filter((g) => g.buckets.length > 0);
 
   return (
     <div>
@@ -213,6 +319,31 @@ export default async function InstagramPage({
       </section>
 
       <div className="section-title">
+        <h2>Qualidade do conteúdo</h2>
+        <span className="hint">Taxas sobre o alcance dos posts</span>
+      </div>
+      <section className="kpi-grid-3">
+        <KpiCard
+          label="Taxa de salvamento"
+          value={`${saveRate.toFixed(2)}%`}
+          hint="salvamentos / alcance"
+          icon={KpiIcons.reach}
+        />
+        <KpiCard
+          label="Taxa de comentário"
+          value={`${commentRate.toFixed(2)}%`}
+          hint="comentários / alcance"
+          icon={KpiIcons.leads}
+        />
+        <KpiCard
+          label="Alcance médio / post"
+          value={fmt(reachPerPost)}
+          hint="por publicação"
+          icon={KpiIcons.sessions}
+        />
+      </section>
+
+      <div className="section-title">
         <h2>Performance por formato</h2>
         <span className="hint">Alcance e engajamento por tipo de post</span>
       </div>
@@ -257,75 +388,17 @@ export default async function InstagramPage({
       {legendas.total === 0 ? (
         <p className="empty-state">Sem legendas no período para analisar.</p>
       ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 14,
-          }}
-        >
-          {legendas.grupos.map((grupo) => {
-            const best = grupo.buckets.reduce<CaptionBucket | undefined>(
-              (m, b) => (b.eng > (m?.eng ?? -1) ? b : m),
-              undefined,
-            );
-            return (
-              <div key={grupo.titulo} className="surface" style={{ padding: '16px 18px' }}>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    color: 'var(--text-muted)',
-                    marginBottom: 14,
-                  }}
-                >
-                  {grupo.titulo}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-                  {grupo.buckets.map((b) => {
-                    const win = grupo.buckets.length > 1 && b === best;
-                    return (
-                      <div
-                        key={b.rotulo}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'baseline',
-                          gap: 8,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 12.5,
-                            color: win ? 'var(--color-secondary)' : 'var(--text)',
-                            fontWeight: win ? 600 : 400,
-                          }}
-                        >
-                          {b.rotulo}
-                          <span style={{ color: 'var(--text-subtle)', fontSize: 11, marginLeft: 6 }}>
-                            ({b.n})
-                          </span>
-                        </span>
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: 13,
-                            color: win ? 'var(--color-secondary)' : 'var(--text-muted)',
-                            fontWeight: win ? 700 : 500,
-                          }}
-                        >
-                          {b.eng.toFixed(1)}%
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <BucketGrid grupos={legendas.grupos} />
+      )}
+
+      <div className="section-title">
+        <h2>Melhor dia / horário pra postar</h2>
+        <span className="hint">Engaj. médio por quando você publica · horário de Brasília</span>
+      </div>
+      {horarioGrupos.length === 0 ? (
+        <p className="empty-state">Sem posts no período para analisar.</p>
+      ) : (
+        <BucketGrid grupos={horarioGrupos} />
       )}
 
       <div className="section-title">
@@ -350,27 +423,63 @@ export default async function InstagramPage({
             {topPosts.map((p) => (
               <tr key={p.post_id} title={p.caption ?? undefined}>
                 <td>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 240 }}>
-                    <span
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    {p.thumbnail_url || p.media_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={p.thumbnail_url || p.media_url || ''}
+                        alt=""
+                        width={44}
+                        height={44}
+                        style={{
+                          borderRadius: 6,
+                          objectFit: 'cover',
+                          flexShrink: 0,
+                          border: '1px solid var(--line)',
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 6,
+                          background: 'var(--surface-2)',
+                          border: '1px solid var(--line)',
+                          flexShrink: 0,
+                        }}
+                      />
+                    )}
+                    <div
                       style={{
-                        fontFamily: 'var(--font-mono)',
-                        fontSize: 11,
-                        color: 'var(--text-muted)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                        minWidth: 0,
+                        maxWidth: 200,
                       }}
                     >
-                      {shortDate(p.published_at)}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 12,
-                        color: 'var(--text)',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {p.caption?.replace(/\s+/g, ' ').trim() || 'Sem legenda'}
-                    </span>
+                      <span
+                        style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: 11,
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        {shortDate(p.published_at)}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          color: 'var(--text)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {p.caption?.replace(/\s+/g, ' ').trim() || 'Sem legenda'}
+                      </span>
+                    </div>
                   </div>
                 </td>
                 <td>
