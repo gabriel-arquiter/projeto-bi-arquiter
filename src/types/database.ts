@@ -61,6 +61,8 @@ export interface InstagramPost {
   caption: string | null;
   media_type: string;
   permalink: string | null;
+  thumbnail_url: string | null;
+  media_url: string | null;
   reach: number | null;
   likes: number | null;
   comments: number | null;
