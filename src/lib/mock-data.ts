@@ -195,6 +195,14 @@ export function mockInstagramMetrics(range: DateRange = defaultRange()): Instagr
   });
 }
 
+const MOCK_CAPTIONS = [
+  'Antes e depois desse projeto incrível 🏡✨',
+  'Qual desses ambientes você levaria pra sua casa? Comenta aqui 👇',
+  'Salva esse post pra inspirar a sua próxima reforma! Link na bio com o portfólio completo, os materiais usados e cada detalhe de execução que mostramos por aqui ao longo das semanas.',
+  'Detalhes que fazem toda a diferença ✨',
+  'Cozinha integrada ou separada? Conta pra gente o que você prefere!',
+];
+
 export function mockInstagramPosts(range: DateRange = defaultRange()): InstagramPost[] {
   const days = eachDay(range);
   const types = ['REELS', 'CAROUSEL_ALBUM', 'IMAGE'];
@@ -202,6 +210,7 @@ export function mockInstagramPosts(range: DateRange = defaultRange()): Instagram
   // ~1 post a cada 3 dias
   for (let i = 0; i < days.length; i += 3) {
     const date = days[i];
+    const idx = i / 3;
     const rand = dateRng(606, date);
     const reach = Math.round(dayWave(date, 5_200, 800, rand, 0.3));
     const likes = Math.round(reach * (0.06 + rand() * 0.04));
@@ -210,9 +219,9 @@ export function mockInstagramPosts(range: DateRange = defaultRange()): Instagram
     out.push({
       post_id: `mock-${date}`,
       published_at: `${date}T12:00:00+00:00`,
-      caption: 'Post de exemplo Arquiter',
-      media_type: types[(i / 3) % types.length],
-      permalink: null,
+      caption: MOCK_CAPTIONS[idx % MOCK_CAPTIONS.length],
+      media_type: types[idx % types.length],
+      permalink: 'https://instagram.com',
       reach,
       likes,
       comments,

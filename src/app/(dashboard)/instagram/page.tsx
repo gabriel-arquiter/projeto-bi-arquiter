@@ -18,6 +18,59 @@ const FORMAT_LABEL: Record<string, string> = {
   IMAGE: 'Foto',
 };
 
+type CaptionPost = { caption: string | null; engagement_rate: number | null };
+type CaptionBucket = { rotulo: string; n: number; eng: number };
+
+// Heurística: classifica as legendas por características (tamanho, CTA, pergunta)
+// e compara o engajamento médio de cada grupo. Tudo determinístico, sem IA.
+function analyzeCaptions(posts: CaptionPost[]) {
+  const withCaption = posts.filter((p) => (p.caption ?? '').trim().length > 0);
+  const engPct = (p: CaptionPost) => (p.engagement_rate ?? 0) * 100;
+  const avg = (arr: CaptionPost[]) =>
+    arr.length ? arr.reduce((s, p) => s + engPct(p), 0) / arr.length : 0;
+  const bucket = (rotulo: string, arr: CaptionPost[]): CaptionBucket => ({
+    rotulo,
+    n: arr.length,
+    eng: avg(arr),
+  });
+
+  const len = (c: string | null) => (c ?? '').length;
+  const ctaRe = /(salv|comenta|comente|coment[áa]|marc|compartilh|link na bio|arrast|clica|clique|envia|manda)/i;
+  const hasCta = (c: string | null) => ctaRe.test(c ?? '');
+  const hasQ = (c: string | null) => (c ?? '').includes('?');
+
+  return {
+    total: withCaption.length,
+    grupos: [
+      {
+        titulo: 'Por tamanho da legenda',
+        buckets: [
+          bucket('Curta (<100)', withCaption.filter((p) => len(p.caption) < 100)),
+          bucket(
+            'Média (100–300)',
+            withCaption.filter((p) => len(p.caption) >= 100 && len(p.caption) <= 300),
+          ),
+          bucket('Longa (>300)', withCaption.filter((p) => len(p.caption) > 300)),
+        ].filter((b) => b.n > 0),
+      },
+      {
+        titulo: 'Chamada para ação (CTA)',
+        buckets: [
+          bucket('Com CTA', withCaption.filter((p) => hasCta(p.caption))),
+          bucket('Sem CTA', withCaption.filter((p) => !hasCta(p.caption))),
+        ].filter((b) => b.n > 0),
+      },
+      {
+        titulo: 'Pergunta na legenda',
+        buckets: [
+          bucket('Com pergunta', withCaption.filter((p) => hasQ(p.caption))),
+          bucket('Sem pergunta', withCaption.filter((p) => !hasQ(p.caption))),
+        ].filter((b) => b.n > 0),
+      },
+    ],
+  };
+}
+
 export default async function InstagramPage({
   searchParams,
 }: {
@@ -80,6 +133,7 @@ export default async function InstagramPage({
     .sort((a, b) => b.reach - a.reach);
 
   const topPosts = posts.slice(0, 6);
+  const legendas = analyzeCaptions(posts);
 
   return (
     <div>
@@ -193,6 +247,86 @@ export default async function InstagramPage({
           </tbody>
         </table>
       </div>
+
+      <div className="section-title">
+        <h2>Legendas que engajam</h2>
+        <span className="hint">
+          {legendas.total} posts com legenda · engaj. médio por característica
+        </span>
+      </div>
+      {legendas.total === 0 ? (
+        <p className="empty-state">Sem legendas no período para analisar.</p>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 14,
+          }}
+        >
+          {legendas.grupos.map((grupo) => {
+            const best = grupo.buckets.reduce<CaptionBucket | undefined>(
+              (m, b) => (b.eng > (m?.eng ?? -1) ? b : m),
+              undefined,
+            );
+            return (
+              <div key={grupo.titulo} className="surface" style={{ padding: '16px 18px' }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    color: 'var(--text-muted)',
+                    marginBottom: 14,
+                  }}
+                >
+                  {grupo.titulo}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+                  {grupo.buckets.map((b) => {
+                    const win = grupo.buckets.length > 1 && b === best;
+                    return (
+                      <div
+                        key={b.rotulo}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'baseline',
+                          gap: 8,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: 12.5,
+                            color: win ? 'var(--color-secondary)' : 'var(--text)',
+                            fontWeight: win ? 600 : 400,
+                          }}
+                        >
+                          {b.rotulo}
+                          <span style={{ color: 'var(--text-subtle)', fontSize: 11, marginLeft: 6 }}>
+                            ({b.n})
+                          </span>
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: 13,
+                            color: win ? 'var(--color-secondary)' : 'var(--text-muted)',
+                            fontWeight: win ? 700 : 500,
+                          }}
+                        >
+                          {b.eng.toFixed(1)}%
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <div className="section-title">
         <h2>Top posts</h2>
