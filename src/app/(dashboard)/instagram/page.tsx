@@ -8,6 +8,8 @@ export const dynamic = 'force-dynamic';
 const fmt = (n: number) => new Intl.NumberFormat('pt-BR').format(Math.round(n));
 const pct = (cur: number, prev: number) => (prev ? ((cur - prev) / prev) * 100 : undefined);
 const sum = (arr: number[]) => arr.reduce((a, b) => a + b, 0);
+const shortDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
 const FORMAT_LABEL: Record<string, string> = {
   REELS: 'Reels',
@@ -200,17 +202,43 @@ export default async function InstagramPage({
         <table>
           <thead>
             <tr>
+              <th>Post</th>
               <th>Formato</th>
               <th>Alcance</th>
               <th>Curtidas</th>
               <th>Coment.</th>
               <th>Saves</th>
               <th>Engaj.</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             {topPosts.map((p) => (
-              <tr key={p.post_id}>
+              <tr key={p.post_id} title={p.caption ?? undefined}>
+                <td>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 240 }}>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 11,
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      {shortDate(p.published_at)}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        color: 'var(--text)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {p.caption?.replace(/\s+/g, ' ').trim() || 'Sem legenda'}
+                    </span>
+                  </div>
+                </td>
                 <td>
                   <span className="badge">{FORMAT_LABEL[p.media_type] ?? p.media_type}</span>
                 </td>
@@ -219,11 +247,25 @@ export default async function InstagramPage({
                 <td className="num">{fmt(p.comments ?? 0)}</td>
                 <td className="num">{fmt(p.saves ?? 0)}</td>
                 <td className="num">{((p.engagement_rate ?? 0) * 100).toFixed(1)}%</td>
+                <td>
+                  {p.permalink ? (
+                    <a
+                      href={p.permalink}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: 'var(--color-secondary)', whiteSpace: 'nowrap' }}
+                    >
+                      abrir ↗
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                </td>
               </tr>
             ))}
             {topPosts.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
                   Sem posts no período. Assim que o pipeline de posts rodar, eles aparecem aqui.
                 </td>
               </tr>
