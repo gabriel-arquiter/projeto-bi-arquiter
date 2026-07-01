@@ -429,10 +429,10 @@ export default async function InstagramPage({
                       <img
                         src={p.thumbnail_url || p.media_url || ''}
                         alt=""
-                        width={72}
-                        height={72}
+                        width={96}
+                        height={96}
                         style={{
-                          borderRadius: 8,
+                          borderRadius: 10,
                           objectFit: 'cover',
                           flexShrink: 0,
                           border: '1px solid var(--line)',
@@ -441,9 +441,9 @@ export default async function InstagramPage({
                     ) : (
                       <div
                         style={{
-                          width: 72,
-                          height: 72,
-                          borderRadius: 8,
+                          width: 96,
+                          height: 96,
+                          borderRadius: 10,
                           background: 'var(--surface-2)',
                           border: '1px solid var(--line)',
                           flexShrink: 0,
