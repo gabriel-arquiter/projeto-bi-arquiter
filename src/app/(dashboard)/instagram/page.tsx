@@ -516,16 +516,16 @@ export default async function InstagramPage({
                       <span
                         style={{
                           fontFamily: 'var(--font-mono)',
-                          fontSize: 13,
+                          fontSize: 16,
                           color: 'var(--text)',
-                          fontWeight: 600,
+                          fontWeight: 700,
                         }}
                       >
                         {value}
                       </span>
                       <span
                         style={{
-                          fontSize: 9.5,
+                          fontSize: 10.5,
                           color: 'var(--text-subtle)',
                           textTransform: 'uppercase',
                           letterSpacing: '0.04em',
