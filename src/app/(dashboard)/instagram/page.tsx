@@ -405,117 +405,153 @@ export default async function InstagramPage({
         <h2>Top posts</h2>
         <span className="hint">Maior taxa de engajamento</span>
       </div>
-      <div className="surface table-wrap scroll-x">
-        <table>
-          <thead>
-            <tr>
-              <th>Post</th>
-              <th>Formato</th>
-              <th>Alcance</th>
-              <th>Curtidas</th>
-              <th>Coment.</th>
-              <th>Saves</th>
-              <th>Engaj.</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {topPosts.map((p) => (
-              <tr key={p.post_id} title={p.caption ?? undefined}>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {p.thumbnail_url || p.media_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={p.thumbnail_url || p.media_url || ''}
-                        alt=""
-                        width={120}
-                        height={120}
-                        style={{
-                          borderRadius: 12,
-                          objectFit: 'cover',
-                          flexShrink: 0,
-                          border: '1px solid var(--line)',
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: 120,
-                          height: 120,
-                          borderRadius: 12,
-                          background: 'var(--surface-2)',
-                          border: '1px solid var(--line)',
-                          flexShrink: 0,
-                        }}
-                      />
-                    )}
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 2,
-                        minWidth: 0,
-                        maxWidth: 200,
-                      }}
-                    >
+      {topPosts.length === 0 ? (
+        <p className="empty-state">
+          Sem posts no período. Assim que o pipeline de posts rodar, eles aparecem aqui.
+        </p>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: 14,
+          }}
+        >
+          {topPosts.map((p) => (
+            <div
+              key={p.post_id}
+              className="surface surface-hover"
+              style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: 0 }}
+            >
+              {/* Capa do post */}
+              <div
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  aspectRatio: '4 / 5',
+                  background: 'var(--surface-2)',
+                }}
+              >
+                {(p.thumbnail_url || p.media_url) && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={p.thumbnail_url || p.media_url || ''}
+                    alt=""
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                )}
+                <span
+                  className="badge"
+                  style={{ position: 'absolute', top: 8, left: 8, backdropFilter: 'blur(4px)' }}
+                >
+                  {FORMAT_LABEL[p.media_type] ?? p.media_type}
+                </span>
+              </div>
+
+              {/* Corpo */}
+              <div
+                style={{
+                  padding: '12px 14px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                  flex: 1,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    gap: 8,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 11,
+                      color: 'var(--text-muted)',
+                    }}
+                  >
+                    {shortDate(p.published_at)}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: 'var(--color-secondary)',
+                    }}
+                  >
+                    {((p.engagement_rate ?? 0) * 100).toFixed(1)}%
+                  </span>
+                </div>
+
+                <p
+                  style={{
+                    fontSize: 12.5,
+                    lineHeight: 1.35,
+                    color: 'var(--text)',
+                    margin: 0,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    minHeight: 34,
+                  }}
+                >
+                  {p.caption?.replace(/\s+/g, ' ').trim() || 'Sem legenda'}
+                </p>
+
+                <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                  {(
+                    [
+                      ['Alcance', fmt(p.reach ?? 0)],
+                      ['Curtidas', fmt(p.likes ?? 0)],
+                      ['Coment.', fmt(p.comments ?? 0)],
+                      ['Saves', fmt(p.saves ?? 0)],
+                    ] as const
+                  ).map(([label, value]) => (
+                    <div key={label} style={{ display: 'flex', flexDirection: 'column' }}>
                       <span
                         style={{
                           fontFamily: 'var(--font-mono)',
-                          fontSize: 11,
-                          color: 'var(--text-muted)',
+                          fontSize: 13,
+                          color: 'var(--text)',
+                          fontWeight: 600,
                         }}
                       >
-                        {shortDate(p.published_at)}
+                        {value}
                       </span>
                       <span
                         style={{
-                          fontSize: 12,
-                          color: 'var(--text)',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
+                          fontSize: 9.5,
+                          color: 'var(--text-subtle)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
                         }}
                       >
-                        {p.caption?.replace(/\s+/g, ' ').trim() || 'Sem legenda'}
+                        {label}
                       </span>
                     </div>
-                  </div>
-                </td>
-                <td>
-                  <span className="badge">{FORMAT_LABEL[p.media_type] ?? p.media_type}</span>
-                </td>
-                <td className="num">{fmt(p.reach ?? 0)}</td>
-                <td className="num">{fmt(p.likes ?? 0)}</td>
-                <td className="num">{fmt(p.comments ?? 0)}</td>
-                <td className="num">{fmt(p.saves ?? 0)}</td>
-                <td className="num">{((p.engagement_rate ?? 0) * 100).toFixed(1)}%</td>
-                <td>
-                  {p.permalink ? (
-                    <a
-                      href={p.permalink}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ color: 'var(--color-secondary)', whiteSpace: 'nowrap' }}
-                    >
-                      abrir ↗
-                    </a>
-                  ) : (
-                    '—'
-                  )}
-                </td>
-              </tr>
-            ))}
-            {topPosts.length === 0 && (
-              <tr>
-                <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                  Sem posts no período. Assim que o pipeline de posts rodar, eles aparecem aqui.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                  ))}
+                </div>
+
+                {p.permalink && (
+                  <a
+                    href={p.permalink}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: 'var(--color-secondary)', fontSize: 12, marginTop: 'auto' }}
+                  >
+                    Ver no Instagram ↗
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
