@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p ${PORT:-3000}",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "validate": "tsc --noEmit && next lint"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
